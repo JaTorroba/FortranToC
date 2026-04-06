@@ -1,4 +1,4 @@
-// Generated from C:/Users/jtm-e/OneDrive - Universidad Rey Juan Carlos/Escritorio/Procesadores de Lenguajes/PRACTICAS/PracticaObligatoria/src/FortranToC.g4 by ANTLR 4.13.2
+// Generated from C:/Users/jtm-e/OneDrive - Universidad Rey Juan Carlos/Escritorio/Procesadores de Lenguajes/PRACTICAS/FortranToC/src/FortranToC.g4 by ANTLR 4.13.2
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
@@ -284,13 +284,6 @@ public class FortranToCBaseVisitor<T> extends AbstractParseTreeVisitor<T> implem
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitFactorcond(FortranToCParser.FactorcondContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitFactorcond_p(FortranToCParser.Factorcond_pContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

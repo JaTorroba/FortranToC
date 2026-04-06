@@ -3,7 +3,12 @@ grammar FortranToC;
 prg : PROGRAM IDENT SEMI dcllist header sentlist END PROGRAM IDENT subproglist ;
 
 /*============Syntax rules:============*/
-type        : INTEGER | REAL | CHARACTER charlength ;
+type        : INTEGER | REAL | CHARACTER charlength
+            //Error alternatives
+            | error=POSSIBLE_CHAR_TYPO charlength
+                {String msg = "Posible typo at character declaration, found: '"+$error.getText()+"', expecting: CHARACTER(NUMBER)";
+                 notifyErrorListeners($error, msg, null);};
+
 charlength  : '(' numint ')' | ;
 numint      : NUM_INT_CONST | NUM_INT_CONST_B | NUM_INT_CONST_H | NUM_INT_CONST_O ;
 simpvalue   : numint | NUM_REAL_CONST | STRING_CONST ;
@@ -11,7 +16,11 @@ init        : '=' simpvalue | ;
 
 /***********Declaration List***********/ //LL1
 dcllist : dcl dcllist | ;
-dcl     : type dcl_p;
+dcl     : type dcl_p
+        //Error alternatives
+        | error=IDENT dcl_p {String msg = "Posible typo, found: '"+$error.getText()+"', expecting valid type: INTEGER, REAL or CHARACTER";
+                            notifyErrorListeners($error, msg, null);};
+
 dcl_p   : defcte | defvar ;
 /*Constant*/
 ctelist : ',' IDENT '=' simpvalue ctelist | ;
@@ -43,12 +52,23 @@ decproc : SUBROUTINE IDENT formal_paramlist dec_s_paramlist END SUBROUTINE IDENT
 formal_paramlist    : '(' nomparamlist ')' | ;
 nomparamlist        : IDENT nomparamlist_p ;
 nomparamlist_p      : ',' IDENT nomparamlist_p | ;
-dec_s_paramlist     : type ',' INTENT '(' paramtype ')' IDENT SEMI dec_s_paramlist | ;
+dec_s_paramlist     : type ',' INTENT '(' paramtype ')' IDENT SEMI dec_s_paramlist
+                    |
+                    //Error alternatives
+                    | error=IDENT ',' INTENT '(' paramtype ')' IDENT SEMI dec_s_paramlist
+                        {String msg = "Posible typo, found: '"+$error.getText()+"', expecting valid type: INTEGER, REAL or CHARACTER";
+                        notifyErrorListeners($error, msg, null);};
+
 paramtype           : IN | OUT | INOUT ;
 
 /*Function*/
 decfun  : FUNCTION IDENT '(' nomparamlist ')' type '::' IDENT SEMI dec_f_paramlist END FUNCTION IDENT ;
-dec_f_paramlist : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist | ;
+dec_f_paramlist : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist
+                |
+                //Error alternatives
+                | error=IDENT ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist
+                    {String msg = "Posible typo, found: '"+$error.getText()+"', expecting valid type: INTEGER, REAL or CHARACTER";
+                    notifyErrorListeners($error, msg, null);};
 
 /*
 dec_f_paramlist : dec_f_paramlist_p ;
@@ -77,7 +97,7 @@ oparit      : '+' | '-' | '*' | '/';
 //factor      : simpvalue | '(' exp ')' | IDENT '(' exp explist ')' | IDENT; // not LL1
 factor      : simpvalue | '(' exp ')' | IDENT subpparamlist;
 proc_call   : CALL IDENT subpparamlist;
-subpparamlist   : '(' exp explist ')' | ;
+subpparamlist   : '(' exp explist ')'| ;
 explist     : ',' exp explist | ;
 
 /*Condition sentencies*/
@@ -127,6 +147,8 @@ ENDDO      : 'ENDDO';
 INTEGER    : 'INTEGER' ;
 REAL       : 'REAL' ;
 CHARACTER  : 'CHARACTER' ;
+POSSIBLE_CHAR_TYPO : [cC][hH][rRaAcCtTeE]+ ;
+
 
 PARAMETER  : 'PARAMETER' ;
 INTENT     : 'INTENT' ;
@@ -164,7 +186,7 @@ STRING_CONST    :
 );
 
 COMMENT     : '!' ~[\r\n]+ '\r'?'\n' -> skip ;
-RN          : [ \t\r\n]+ -> skip ;
+WSTRN          : [ \t\r\n]+ -> skip ;
 
 fragment SINGLE_QUOTE : '\'' ;
 fragment DOUBLE_QUOTE : '"'  ;

@@ -1,4 +1,4 @@
-// Generated from C:/Users/jtm-e/OneDrive - Universidad Rey Juan Carlos/Escritorio/Procesadores de Lenguajes/PRACTICAS/PracticaObligatoria/src/FortranToC.g4 by ANTLR 4.13.2
+// Generated from C:/Users/jtm-e/OneDrive - Universidad Rey Juan Carlos/Escritorio/Procesadores de Lenguajes/PRACTICAS/FortranToC/src/FortranToC.g4 by ANTLR 4.13.2
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -396,16 +396,6 @@ public interface FortranToCListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFactorcond(FortranToCParser.FactorcondContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link FortranToCParser#factorcond_p}.
-	 * @param ctx the parse tree
-	 */
-	void enterFactorcond_p(FortranToCParser.Factorcond_pContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link FortranToCParser#factorcond_p}.
-	 * @param ctx the parse tree
-	 */
-	void exitFactorcond_p(FortranToCParser.Factorcond_pContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link FortranToCParser#opcomp}.
 	 * @param ctx the parse tree

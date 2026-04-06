@@ -26,6 +26,14 @@ public class FortranToCTranslator {
             Aquí se le llama "sintesis", pero puede ser cualquier nombre.
             NumbersParser anasint = new NumbersParser(tokens, new sintesis());
             */
+            /*
+            Remove ConsoleErrorListener from Parser
+            */
+            parser.removeErrorListeners();
+            /*
+            Add self-made VerboseErrorListener
+            */
+            parser.addErrorListener(new VerboseErrorListener());
             parser.prg();
 
         } catch (org.antlr.v4.runtime.RecognitionException e) {
