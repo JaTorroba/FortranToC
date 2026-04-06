@@ -67,6 +67,16 @@ public interface FortranToCListener extends ParseTreeListener {
 	 */
 	void exitInit(FortranToCParser.InitContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#init_p}.
+	 * @param ctx the parse tree
+	 */
+	void enterInit_p(FortranToCParser.Init_pContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#init_p}.
+	 * @param ctx the parse tree
+	 */
+	void exitInit_p(FortranToCParser.Init_pContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link FortranToCParser#dcllist}.
 	 * @param ctx the parse tree
 	 */

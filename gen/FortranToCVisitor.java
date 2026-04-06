@@ -46,6 +46,12 @@ public interface FortranToCVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitInit(FortranToCParser.InitContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#init_p}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInit_p(FortranToCParser.Init_pContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link FortranToCParser#dcllist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

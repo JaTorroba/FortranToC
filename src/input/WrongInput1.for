@@ -4,7 +4,7 @@ RAEL, PARAMETER :: pi = 3.1415, e = 2.71828, c = 2e-6;
 
 INTEGER :: contador = , acumulador;
 REAL :: promedio, total = 0.0;
-CHARCTER(10) :: mensaje1 = 'Hola', mensaje2 = 'Mundo';
+CHARCTER(10) :: mensaje1 = Hola, mensaje2 = 'Mundo';
 
     INTERFACE
 

@@ -88,6 +88,18 @@ public class FortranToCBaseListener implements FortranToCListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterInit_p(FortranToCParser.Init_pContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitInit_p(FortranToCParser.Init_pContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDcllist(FortranToCParser.DcllistContext ctx) { }
 	/**
 	 * {@inheritDoc}

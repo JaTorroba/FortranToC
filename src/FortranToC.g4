@@ -18,7 +18,19 @@ type        : INTEGER | REAL | CHARACTER charlength
 charlength  : '(' numint ')' | ;
 numint      : NUM_INT_CONST | NUM_INT_CONST_B | NUM_INT_CONST_H | NUM_INT_CONST_O ;
 simpvalue   : numint | NUM_REAL_CONST | STRING_CONST ;
-init        : '=' simpvalue | ;
+init        : '=' init_p | ;
+//init_p is meant for keeping LL1 condition after adding error alternatives
+init_p      : simpvalue
+            //Error alternatives
+            | error=IDENT
+                {String msg = "Wrong variable initilization, found: '"+$error.getText()+"', expecting: {NUM_REAL_CONST, NUM_INT_CONST, NUM_INT_CONST_B, NUM_INT_CONST_O, NUM_INT_CONST_H, STRING_CONST}";
+                 notifyErrorListeners($error, msg, null);}
+            | /* empty */
+              {
+               Token offToken = _input.LT(1); // Capture current token (',' or ';'...)
+               String msg = "Missing variable initialization value before '" + offToken.getText() + "'";
+               notifyErrorListeners(offToken, msg, null);
+               };
 
 /***********Declaration List***********/ //LL1
 dcllist : dcl dcllist | ;
