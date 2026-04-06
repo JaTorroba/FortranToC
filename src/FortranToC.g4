@@ -7,6 +7,12 @@ type        : INTEGER | REAL | CHARACTER charlength
             //Error alternatives
             | error=POSSIBLE_CHAR_TYPO charlength
                 {String msg = "Posible typo at character declaration, found: '"+$error.getText()+"', expecting: CHARACTER(NUMBER)";
+                 notifyErrorListeners($error, msg, null);}
+            | error=POSSIBLE_INT_TYPO
+                {String msg = "Posible typo at integer declaration, found: '"+$error.getText()+"', expecting: INTEGER";
+                 notifyErrorListeners($error, msg, null);}
+            | error=POSSIBLE_REAL_TYPO
+                {String msg = "Posible typo at real declaration, found: '"+$error.getText()+"', expecting: REAL";
                  notifyErrorListeners($error, msg, null);};
 
 charlength  : '(' numint ')' | ;
@@ -16,11 +22,7 @@ init        : '=' simpvalue | ;
 
 /***********Declaration List***********/ //LL1
 dcllist : dcl dcllist | ;
-dcl     : type dcl_p
-        //Error alternatives
-        | error=IDENT dcl_p {String msg = "Posible typo, found: '"+$error.getText()+"', expecting valid type: INTEGER, REAL or CHARACTER";
-                            notifyErrorListeners($error, msg, null);};
-
+dcl     : type dcl_p;
 dcl_p   : defcte | defvar ;
 /*Constant*/
 ctelist : ',' IDENT '=' simpvalue ctelist | ;
@@ -52,23 +54,13 @@ decproc : SUBROUTINE IDENT formal_paramlist dec_s_paramlist END SUBROUTINE IDENT
 formal_paramlist    : '(' nomparamlist ')' | ;
 nomparamlist        : IDENT nomparamlist_p ;
 nomparamlist_p      : ',' IDENT nomparamlist_p | ;
-dec_s_paramlist     : type ',' INTENT '(' paramtype ')' IDENT SEMI dec_s_paramlist
-                    |
-                    //Error alternatives
-                    | error=IDENT ',' INTENT '(' paramtype ')' IDENT SEMI dec_s_paramlist
-                        {String msg = "Posible typo, found: '"+$error.getText()+"', expecting valid type: INTEGER, REAL or CHARACTER";
-                        notifyErrorListeners($error, msg, null);};
+dec_s_paramlist     : type ',' INTENT '(' paramtype ')' IDENT SEMI dec_s_paramlist | ;
 
 paramtype           : IN | OUT | INOUT ;
 
 /*Function*/
 decfun  : FUNCTION IDENT '(' nomparamlist ')' type '::' IDENT SEMI dec_f_paramlist END FUNCTION IDENT ;
-dec_f_paramlist : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist
-                |
-                //Error alternatives
-                | error=IDENT ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist
-                    {String msg = "Posible typo, found: '"+$error.getText()+"', expecting valid type: INTEGER, REAL or CHARACTER";
-                    notifyErrorListeners($error, msg, null);};
+dec_f_paramlist : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist | ;
 
 /*
 dec_f_paramlist : dec_f_paramlist_p ;
@@ -147,7 +139,27 @@ ENDDO      : 'ENDDO';
 INTEGER    : 'INTEGER' ;
 REAL       : 'REAL' ;
 CHARACTER  : 'CHARACTER' ;
-POSSIBLE_CHAR_TYPO : [cC][hH][rRaAcCtTeE]+ ;
+
+//INTEGER TYPOS
+POSSIBLE_INT_TYPO  : [iI][nN][tT][gG][eE][rR]          // INTGER
+                   | [iI][nN][tT][eE][gG][rR]          // INTEGR
+                   | [iI][nN][eE][gG][eE][rR]          // INEGER
+                   | [iI][nN][tT][eE][rR][gG][eE][rR]  // INTERGER
+                   | [iI][nN][tT][iI][gG][eE][rR]      // INTIGER
+                   ;
+//REAL TYPOS
+POSSIBLE_REAL_TYPO : [rR][aA][eE][lL]                  // RAEL
+                   | [rR][eE][aA][lL][lL]              // REALL
+                   ;
+//CHARACTER TYPOS
+POSSIBLE_CHAR_TYPO : [cC][aA][rR][aA][cC][tT][eE][rR]          // CARACTER
+                   | [cC][hH][rR][aA][cC][tT][eE][rR]          // CHRACTER
+                   | [cC][hH][aA][rR][cC][tT][eE][rR]          // CHARCTER
+                   | [cC][hH][aA][rR][aA][tT][eE][rR]          // CHARATER
+                   | [cC][hH][aA][rR][aA][cC][tT][rR]          // CHARACTR
+                   | [cC][hH][rR][aA][cC][tT][rR]              // CHRACTR
+                   | [cC][hH][aA][rR][aA][cC][rR][tT][eE][rR]  // CHARACRTER
+                   ;
 
 
 PARAMETER  : 'PARAMETER' ;
