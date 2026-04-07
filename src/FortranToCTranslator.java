@@ -20,6 +20,8 @@ public class FortranToCTranslator {
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             // Crear el objeto correspondiente al analizador sintáctico
             FortranToCParser parser = new FortranToCParser(tokens);
+            ErrorNotifier errNot = new ErrorNotifier(parser);
+            parser.setErrorNotifier(errNot);
             /*
             Si se quiere pasar al analizador algún objeto externo con el que trabajar,
             este deberá ser de una clase del mismo paquete

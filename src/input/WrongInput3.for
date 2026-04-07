@@ -6,6 +6,5 @@ IF contador > 0 THEN
     contador = contador - 1;
 ENDIF
 
-SELECT CASE (:
 
 END PROGRAM error_sin_if

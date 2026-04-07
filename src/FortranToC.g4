@@ -1,19 +1,24 @@
 grammar FortranToC;
 
+@parser::members {
+    private ErrorNotifier errorNotifier;
+
+    public void setErrorNotifier(ErrorNotifier errorNotifier) {
+        this.errorNotifier = errorNotifier;
+    }
+}
+
 prg : PROGRAM IDENT SEMI dcllist header sentlist END PROGRAM IDENT subproglist ;
 
 /*============Syntax rules:============*/
 type        : INTEGER | REAL | CHARACTER charlength
             //Error alternatives
             | error=POSSIBLE_CHAR_TYPO charlength
-                {String msg = "Posible typo at character declaration, found: '"+$error.getText()+"', expecting: CHARACTER(NUMBER)";
-                 notifyErrorListeners($error, msg, null);}
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "character_typo");}
             | error=POSSIBLE_INT_TYPO
-                {String msg = "Posible typo at integer declaration, found: '"+$error.getText()+"', expecting: INTEGER";
-                 notifyErrorListeners($error, msg, null);}
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "integer_typo");}
             | error=POSSIBLE_REAL_TYPO
-                {String msg = "Posible typo at real declaration, found: '"+$error.getText()+"', expecting: REAL";
-                 notifyErrorListeners($error, msg, null);};
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "real_typo");};
 
 charlength  : '(' numint ')' | ;
 numint      : NUM_INT_CONST | NUM_INT_CONST_B | NUM_INT_CONST_H | NUM_INT_CONST_O ;
@@ -23,14 +28,9 @@ init        : '=' init_p | ;
 init_p      : simpvalue
             //Error alternatives
             | error=IDENT
-                {String msg = "Wrong variable initilization, found: '"+$error.getText()+"', expecting: {NUM_REAL_CONST, NUM_INT_CONST, NUM_INT_CONST_B, NUM_INT_CONST_O, NUM_INT_CONST_H, STRING_CONST}";
-                 notifyErrorListeners($error, msg, null);}
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "var_init");}
             | /* empty */
-              {
-               Token offToken = _input.LT(1); // Capture current token (',' or ';'...)
-               String msg = "Missing variable initialization value before '" + offToken.getText() + "'";
-               notifyErrorListeners(offToken, msg, null);
-               };
+              {Token offToken = _input.LT(1); this.errorNotifier.notifyError(offToken, "miss_var_init");};
 
 /***********Declaration List***********/ //LL1
 dcllist : dcl dcllist | ;
@@ -93,9 +93,8 @@ sent        : IDENT '=' exp SEMI | proc_call SEMI
 sent_if      : '(' expcond ')' if_body
              //Error alternatives
              | error=expcond if_body
-                {Token offToken = $error.start;
-                String msg = "Missing '( )' around condition, found: '"+offToken.getText()+"...', expecting: ("+offToken.getText()+"...)";
-                notifyErrorListeners(offToken, msg, null);};
+                {Token offToken = $error.start;this.errorNotifier.notifyError(offToken, "miss_cond_par");};
+
 if_body     : sent | THEN sentlist if_body_p;
 if_body_p   : ENDIF | ELSE sentlist ENDIF;
 
@@ -106,17 +105,13 @@ doval       : NUM_INT_CONST | IDENT;
 cases       : CASE cases_p
             |
             | error=DEFAULT sentlist
-                {Token offToken = $error;
-                 String msg = "Missing 'CASE' before DEFAULT, found: '"+offToken.getText()+"', expecting: CASE DEFAULT";
-                 notifyErrorListeners(offToken, msg, null);};
+                {Token offToken = $error;this.errorNotifier.notifyError(offToken, "miss_case_default");};
 
 cases_p     : '(' tags ')' sentlist cases
             | DEFAULT sentlist
             //Error alternatives
             | error=tags sentlist cases
-                {Token offToken = $error.start;
-                String msg = "Missing '( )' around condition, found: '"+offToken.getText()+"...', expecting: ("+offToken.getText()+"...)";
-                notifyErrorListeners(offToken, msg, null);};
+                {Token offToken = $error.start;this.errorNotifier.notifyError(offToken, "miss_cond_par");};
 
 tags        : simpvalue tags_p | ':' simpvalue;
 tags_p      : tagslist | ':' tags_pp;
