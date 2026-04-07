@@ -81,11 +81,47 @@ dec_f_paramlist_p   : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist_p | 
 
 /*************Sentencie List************/
 
-/*Normal sentencies*/
+/*Sentencies*/
 //sentlist  : sent | sentlist sent // not LL
 sentlist    : sent sentlist_p;
 sentlist_p  : sent sentlist_p | ;
-sent        : IDENT '=' exp SEMI | proc_call SEMI;
+sent        : IDENT '=' exp SEMI | proc_call SEMI
+            | IF sent_if
+            | DO loop_body
+            | SELECT CASE '(' exp ')' cases END SELECT;
+
+sent_if      : '(' expcond ')' if_body
+             //Error alternatives
+             | error=expcond if_body
+                {Token offToken = $error.start;
+                String msg = "Missing '( )' around condition, found: '"+offToken.getText()+"...', expecting: ("+offToken.getText()+"...)";
+                notifyErrorListeners(offToken, msg, null);};
+if_body     : sent | THEN sentlist if_body_p;
+if_body_p   : ENDIF | ELSE sentlist ENDIF;
+
+loop_body   : WHILE '(' expcond ')' sentlist ENDDO
+            | IDENT '=' doval ',' doval ',' doval sentlist ENDDO;
+doval       : NUM_INT_CONST | IDENT;
+
+cases       : CASE cases_p
+            |
+            | error=DEFAULT sentlist
+                {Token offToken = $error;
+                 String msg = "Missing 'CASE' before DEFAULT, found: '"+offToken.getText()+"', expecting: CASE DEFAULT";
+                 notifyErrorListeners(offToken, msg, null);};
+
+cases_p     : '(' tags ')' sentlist cases
+            | DEFAULT sentlist
+            //Error alternatives
+            | error=tags sentlist cases
+                {Token offToken = $error.start;
+                String msg = "Missing '( )' around condition, found: '"+offToken.getText()+"...', expecting: ("+offToken.getText()+"...)";
+                notifyErrorListeners(offToken, msg, null);};
+
+tags        : simpvalue tags_p | ':' simpvalue;
+tags_p      : tagslist | ':' tags_pp;
+tags_pp     : simpvalue | ;
+tagslist    : ',' simpvalue tagslist | ;
 /*
 not LL
 exp : exp op exp | factor;
