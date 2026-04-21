@@ -4,6 +4,11 @@ import java.util.Map;
 import java.util.HashMap;
 
 
+/*
+*@author JaTorroba
+*Decorator class for enhanced error notification with personalized messages for error alternatives
+*/
+
 public class ErrorNotifier {
     private final FortranToCParser parser;
     private final Map<String, String> msgMap;
@@ -27,13 +32,13 @@ public class ErrorNotifier {
     public void notifyError(Token offToken, String msgKey) {
         String template = msgMap.getOrDefault(msgKey, "Syntax error near: '%1$s'");
 
-        // Extraemos el texto del token de forma segura
+        // Safely extract text from token
         String tokenText = (offToken != null) ? offToken.getText() : "missing token";
 
-        // Inyectamos el texto del token en la plantilla
+        // Inyect text in the message template
         String msg = String.format(template, tokenText);
 
-        // Notificamos al parser
+        // Notify parser
         parser.notifyErrorListeners(offToken, msg, null);
     }
 }

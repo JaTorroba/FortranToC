@@ -297,6 +297,116 @@ public interface FortranToCListener extends ParseTreeListener {
 	 */
 	void exitSent(FortranToCParser.SentContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#sent_if}.
+	 * @param ctx the parse tree
+	 */
+	void enterSent_if(FortranToCParser.Sent_ifContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#sent_if}.
+	 * @param ctx the parse tree
+	 */
+	void exitSent_if(FortranToCParser.Sent_ifContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#if_body}.
+	 * @param ctx the parse tree
+	 */
+	void enterIf_body(FortranToCParser.If_bodyContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#if_body}.
+	 * @param ctx the parse tree
+	 */
+	void exitIf_body(FortranToCParser.If_bodyContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#if_body_p}.
+	 * @param ctx the parse tree
+	 */
+	void enterIf_body_p(FortranToCParser.If_body_pContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#if_body_p}.
+	 * @param ctx the parse tree
+	 */
+	void exitIf_body_p(FortranToCParser.If_body_pContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#loop_body}.
+	 * @param ctx the parse tree
+	 */
+	void enterLoop_body(FortranToCParser.Loop_bodyContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#loop_body}.
+	 * @param ctx the parse tree
+	 */
+	void exitLoop_body(FortranToCParser.Loop_bodyContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#doval}.
+	 * @param ctx the parse tree
+	 */
+	void enterDoval(FortranToCParser.DovalContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#doval}.
+	 * @param ctx the parse tree
+	 */
+	void exitDoval(FortranToCParser.DovalContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#cases}.
+	 * @param ctx the parse tree
+	 */
+	void enterCases(FortranToCParser.CasesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#cases}.
+	 * @param ctx the parse tree
+	 */
+	void exitCases(FortranToCParser.CasesContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#cases_p}.
+	 * @param ctx the parse tree
+	 */
+	void enterCases_p(FortranToCParser.Cases_pContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#cases_p}.
+	 * @param ctx the parse tree
+	 */
+	void exitCases_p(FortranToCParser.Cases_pContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#tags}.
+	 * @param ctx the parse tree
+	 */
+	void enterTags(FortranToCParser.TagsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#tags}.
+	 * @param ctx the parse tree
+	 */
+	void exitTags(FortranToCParser.TagsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#tags_p}.
+	 * @param ctx the parse tree
+	 */
+	void enterTags_p(FortranToCParser.Tags_pContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#tags_p}.
+	 * @param ctx the parse tree
+	 */
+	void exitTags_p(FortranToCParser.Tags_pContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#tags_pp}.
+	 * @param ctx the parse tree
+	 */
+	void enterTags_pp(FortranToCParser.Tags_ppContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#tags_pp}.
+	 * @param ctx the parse tree
+	 */
+	void exitTags_pp(FortranToCParser.Tags_ppContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link FortranToCParser#tagslist}.
+	 * @param ctx the parse tree
+	 */
+	void enterTagslist(FortranToCParser.TagslistContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link FortranToCParser#tagslist}.
+	 * @param ctx the parse tree
+	 */
+	void exitTagslist(FortranToCParser.TagslistContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link FortranToCParser#exp}.
 	 * @param ctx the parse tree
 	 */

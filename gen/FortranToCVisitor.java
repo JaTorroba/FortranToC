@@ -184,6 +184,72 @@ public interface FortranToCVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSent(FortranToCParser.SentContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#sent_if}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSent_if(FortranToCParser.Sent_ifContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#if_body}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIf_body(FortranToCParser.If_bodyContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#if_body_p}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIf_body_p(FortranToCParser.If_body_pContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#loop_body}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLoop_body(FortranToCParser.Loop_bodyContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#doval}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDoval(FortranToCParser.DovalContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#cases}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCases(FortranToCParser.CasesContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#cases_p}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCases_p(FortranToCParser.Cases_pContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#tags}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTags(FortranToCParser.TagsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#tags_p}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTags_p(FortranToCParser.Tags_pContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#tags_pp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTags_pp(FortranToCParser.Tags_ppContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link FortranToCParser#tagslist}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTagslist(FortranToCParser.TagslistContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link FortranToCParser#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

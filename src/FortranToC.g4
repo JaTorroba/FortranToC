@@ -1,11 +1,7 @@
 grammar FortranToC;
 
 @parser::members {
-    private ErrorNotifier errorNotifier;
-
-    public void setErrorNotifier(ErrorNotifier errorNotifier) {
-        this.errorNotifier = errorNotifier;
-    }
+    public ErrorNotifier errorNotifier = new ErrorNotifier(this);
 }
 
 prg : PROGRAM IDENT SEMI dcllist header sentlist END PROGRAM IDENT subproglist ;
