@@ -7,14 +7,17 @@ grammar FortranToC;
 prg : PROGRAM IDENT SEMI dcllist header sentlist END PROGRAM IDENT subproglist ;
 
 /*============Syntax rules:============*/
-type        : INTEGER | REAL | CHARACTER charlength
+type returns [model.Type val]
+            : INTEGER {$val = model.Type.INTEGER;}
+            | REAL {$val = model.Type.REAL;}
+            | CHARACTER charlength {$val = model.Type.CHARACTER;}
             //Error alternatives
             | error=POSSIBLE_CHAR_TYPO charlength
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "character_typo");}
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "character_typo"); $val = model.Type.CHARACTER;}
             | error=POSSIBLE_INT_TYPO
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "integer_typo");}
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "integer_typo"); $val = model.Type.INTEGER;}
             | error=POSSIBLE_REAL_TYPO
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "real_typo");};
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "real_typo"); $val = model.Type.REAL;};
 
 charlength  : '(' numint ')' | ;
 numint      : NUM_INT_CONST | NUM_INT_CONST_B | NUM_INT_CONST_H | NUM_INT_CONST_O ;
@@ -24,17 +27,17 @@ init        : '=' init_p | ;
 init_p      : simpvalue
             //Error alternatives
             | error=IDENT
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "var_init");}
+              {Token offToken = $error; this.errorNotifier.notifyError(offToken, "var_init");}
             | /* empty */
               {Token offToken = _input.LT(1); this.errorNotifier.notifyError(offToken, "miss_var_init");};
 
 /***********Declaration List***********/ //LL1
 dcllist : dcl dcllist | ;
-dcl     : type dcl_p;
+dcl     : type dcl_p {System.out.println($type.val);};
 dcl_p   : defcte | defvar ;
 /*Constant*/
 ctelist : ',' IDENT '=' simpvalue ctelist | ;
-defcte  : ',' PARAMETER '::' IDENT '=' simpvalue ctelist SEMI ;
+defcte  : ',' PARAMETER '::' IDENT '=' simpvalue ctelist SEMI;
 /*Variable*/
 defvar  : '::' varlist SEMI ;
 varlist     : IDENT init varlist_p ;
@@ -82,14 +85,10 @@ dec_f_paramlist_p   : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist_p | 
 sentlist    : sent sentlist_p;
 sentlist_p  : sent sentlist_p | ;
 sent        : IDENT '=' exp SEMI | proc_call SEMI
-            | IF sent_if
+            | IF '(' expcond ')' if_body
             | DO loop_body
             | SELECT CASE '(' exp ')' cases END SELECT;
 
-sent_if      : '(' expcond ')' if_body
-             //Error alternatives
-             | error=expcond if_body
-                {Token offToken = $error.start;this.errorNotifier.notifyError(offToken, "miss_cond_par");};
 
 if_body     : sent | THEN sentlist if_body_p;
 if_body_p   : ENDIF | ELSE sentlist ENDIF;
@@ -150,8 +149,16 @@ opcomp      : '<' | '>' | '<=' | '>=' | '==' | '/=' ;
 /***************Subprogram***************/
 
 subproglist : codproc subproglist | codfun subproglist | ;
-codproc     : SUBROUTINE IDENT formal_paramlist dec_s_paramlist dcllist sentlist END SUBROUTINE IDENT;
-codfun      : FUNCTION IDENT '(' nomparamlist ')' type '::' IDENT SEMI dec_f_paramlist dcllist sentlist_fun;
+codproc     : SUBROUTINE id1=IDENT formal_paramlist dec_s_paramlist dcllist sentlist END SUBROUTINE id2=IDENT
+                    {/*$id1.text...*/};
+codfun      : FUNCTION IDENT '(' nomparamlist ')'
+                type '::' IDENT SEMI
+                dec_f_paramlist
+                dcllist
+                //sentlist
+                //IDENT = exp SEMI
+                //END FUNCTION IDENT
+                sentlist_fun;
 
 sentlist_fun    : IDENT '=' exp SEMI sentlist_fun_p | proc_call SEMI sentlist_fun;
 sentlist_fun_p  : END FUNCTION IDENT | sentlist_fun;
