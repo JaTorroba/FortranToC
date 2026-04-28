@@ -184,12 +184,6 @@ public interface FortranToCVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSent(FortranToCParser.SentContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link FortranToCParser#sent_if}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitSent_if(FortranToCParser.Sent_ifContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link FortranToCParser#if_body}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

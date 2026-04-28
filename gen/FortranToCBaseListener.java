@@ -364,18 +364,6 @@ public class FortranToCBaseListener implements FortranToCListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSent_if(FortranToCParser.Sent_ifContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSent_if(FortranToCParser.Sent_ifContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterIf_body(FortranToCParser.If_bodyContext ctx) { }
 	/**
 	 * {@inheritDoc}

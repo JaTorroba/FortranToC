@@ -27,6 +27,8 @@ public class ErrorNotifier {
         this.msgMap.put("miss_var_init","Missing variable initialization value before '%1$s'");
         this.msgMap.put("miss_cond_par", "Missing '( )' around condition, found: '%1$s...', expecting: (%1$s...)");
         this.msgMap.put("miss_case_default", "Missing 'CASE' before DEFAULT, found: '%1$s', expecting: CASE DEFAULT");
+        this.msgMap.put("missatched_value_type", "Type declared for: '%1$s', does not correspond to the assigned value");
+
     }
 
     public void notifyError(Token offToken, String msgKey) {

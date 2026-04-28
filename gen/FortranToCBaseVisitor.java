@@ -220,13 +220,6 @@ public class FortranToCBaseVisitor<T> extends AbstractParseTreeVisitor<T> implem
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitSent_if(FortranToCParser.Sent_ifContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitIf_body(FortranToCParser.If_bodyContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

@@ -1,47 +1,95 @@
 grammar FortranToC;
 
-@parser::members {
-    public ErrorNotifier errorNotifier = new ErrorNotifier(this);
+@parser::header {
+    import model.*;
 }
 
-prg : PROGRAM IDENT SEMI dcllist header sentlist END PROGRAM IDENT subproglist ;
+@parser::members {
+    public ErrorNotifier errorNotifier = new ErrorNotifier(this);
+    public Program program = new Program();
+}
+
+prg : PROGRAM IDENT SEMI
+      dcllist {for (Constant c : this.program.getSymbols().getConstants()) c.generateCode();}
+      header sentlist END PROGRAM IDENT subproglist ;
 
 /*============Syntax rules:============*/
-type returns [model.Type val]
-            : INTEGER {$val = model.Type.INTEGER;}
-            | REAL {$val = model.Type.REAL;}
-            | CHARACTER charlength {$val = model.Type.CHARACTER;}
+type returns [String val, String length]
+            : INTEGER {$val = "int"; $length="";}
+            | REAL {$val = "float"; $length="";}
+            | CHARACTER c=charlength {$val = "char"; $length=$c.length;}
             //Error alternatives
-            | error=POSSIBLE_CHAR_TYPO charlength
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "character_typo"); $val = model.Type.CHARACTER;}
+            | error=POSSIBLE_CHAR_TYPO c=charlength
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "character_typo"); $val = "char";$length=$c.length;}
             | error=POSSIBLE_INT_TYPO
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "integer_typo"); $val = model.Type.INTEGER;}
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "integer_typo"); $val = "int"; $length="";}
             | error=POSSIBLE_REAL_TYPO
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "real_typo"); $val = model.Type.REAL;};
+                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "real_typo"); $val = "float"; $length="";};
 
-charlength  : '(' numint ')' | ;
-numint      : NUM_INT_CONST | NUM_INT_CONST_B | NUM_INT_CONST_H | NUM_INT_CONST_O ;
-simpvalue   : numint | NUM_REAL_CONST | STRING_CONST ;
-init        : '=' init_p | ;
+charlength returns [String length]
+            : '(' n=numint ')' {$length = "["+$n.val+"]";}
+            | {$length = "";};
+numint returns [Integer val]
+    : n=NUM_INT_CONST   { $val = Integer.parseInt($n.text); }
+    | n=NUM_INT_CONST_B { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 2); }
+    | n=NUM_INT_CONST_H { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 16); }
+    | n=NUM_INT_CONST_O { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 8); }
+    ;
+
+simpvalue returns [String val, String t]
+    : n=numint         { $val = String.valueOf($n.val); $t = "int"; }
+    | r=NUM_REAL_CONST { $val = $r.text; $t = "float"; }
+    | s=STRING_CONST   { $val = $s.text; $t = "char"; }
+    ;
+
+init returns [String val, String t]
+    : '=' i=init_p {$val = $i.val; $t=$i.t;}
+    | {$val = ""; $t="";} ;
 //init_p is meant for keeping LL1 condition after adding error alternatives
-init_p      : simpvalue
-            //Error alternatives
-            | error=IDENT
-              {Token offToken = $error; this.errorNotifier.notifyError(offToken, "var_init");}
-            | /* empty */
-              {Token offToken = _input.LT(1); this.errorNotifier.notifyError(offToken, "miss_var_init");};
+init_p returns [String val, String t]
+    : s=simpvalue {$val = $s.val; $t=$s.t;}
+    //Error alternatives
+    | error=IDENT
+        {Token offToken = $error; this.errorNotifier.notifyError(offToken, "var_init");
+        $val = ""; $t="";}
+    | /* empty */
+        {Token offToken = _input.LT(1); this.errorNotifier.notifyError(offToken, "miss_var_init");
+        $val = ""; $t="";};
 
 /***********Declaration List***********/ //LL1
-dcllist : dcl dcllist | ;
-dcl     : type dcl_p {System.out.println($type.val);};
-dcl_p   : defcte | defvar ;
+dcllist
+    : dcl dcllist | ;
+dcl     : type dcl_p[$type.val, $type.length] ;
+dcl_p [String expectedType, String expectedLen]
+    : defcte[$expectedType]
+    | defvar[$expectedType, $expectedLen] ;
 /*Constant*/
-ctelist : ',' IDENT '=' simpvalue ctelist | ;
-defcte  : ',' PARAMETER '::' IDENT '=' simpvalue ctelist SEMI;
+ctelist [String expectedType]
+    : ',' i=IDENT '=' s=simpvalue ctelist[$expectedType]
+        {if (!$expectedType.equals($s.t)) {
+            Token offToken = $i;this.errorNotifier.notifyError(offToken, "missmatched_value_type");}
+         this.program.declareCte($i.text, $s.val);}
+    | ;
+defcte [String expectedType]
+    : ',' PARAMETER '::'
+       i=IDENT '=' s=simpvalue
+          {if (!$expectedType.equals($s.t)) {
+             Token offToken = $i;this.errorNotifier.notifyError(offToken, "missmatched_value_type");}
+          this.program.declareCte($i.text, $s.val);}
+
+       ctelist[$expectedType] SEMI;
 /*Variable*/
-defvar  : '::' varlist SEMI ;
-varlist     : IDENT init varlist_p ;
-varlist_p   : ',' IDENT init varlist_p | ;
+defvar [String expectedType, String expectedLen]
+    : '::' {System.out.print($expectedType+" ");} varlist[$expectedType, $expectedLen] SEMI {System.out.println();} ;
+varlist [String expectedType, String expectedLen]
+    : i=IDENT ini=init {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
+                        System.out.print($i.text+$expectedLen+" = "+$ini.val);}
+    varlist_p[$expectedType, $expectedLen] ;
+varlist_p [String expectedType, String expectedLen]
+    : ',' i=IDENT ini=init {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
+                            System.out.print(", "+$i.text+$expectedLen+" = "+$ini.val);}
+      varlist_p[$expectedType, $expectedLen]
+    | ;
 
 /*
 defcte  : type ',' PARAMETER '::' IDENT '=' simpvalue ctelist SEMI defcte_p ;

@@ -297,16 +297,6 @@ public interface FortranToCListener extends ParseTreeListener {
 	 */
 	void exitSent(FortranToCParser.SentContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link FortranToCParser#sent_if}.
-	 * @param ctx the parse tree
-	 */
-	void enterSent_if(FortranToCParser.Sent_ifContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link FortranToCParser#sent_if}.
-	 * @param ctx the parse tree
-	 */
-	void exitSent_if(FortranToCParser.Sent_ifContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link FortranToCParser#if_body}.
 	 * @param ctx the parse tree
 	 */

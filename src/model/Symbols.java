@@ -1,9 +1,6 @@
 package model;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Symbols {
     private final Map<String, Constant> cte;
@@ -38,6 +35,10 @@ public class Symbols {
     public void addSub(String name, Subprogram sub) {
         this.sub.put(name, sub);
         this.symbols.add(name);
+    }
+
+    public Collection<Constant> getConstants() {
+        return this.cte.values();
     }
 
 

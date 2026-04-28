@@ -1,19 +1,23 @@
 package model;
 
 public class Constant {
-    private final Type type;
+    private final String value;
     private final String name;
 
-    public Constant(String name, Type type) {
-        this.type = type;
+    public Constant(String name, String value) {
+        this.value = value;
         this.name = name;
     }
 
-    public Type getType() {
-        return type;
+    public String getValue() {
+        return value;
     }
 
     public String getName() {
         return name;
+    }
+
+    public void generateCode() {
+        System.out.println("#define "+this.name+" "+this.value);
     }
 }
