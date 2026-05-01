@@ -41,6 +41,9 @@ public class Symbols {
         return this.cte.values();
     }
 
+    public Collection<Variable> getVars() {
+        return this.var.values();
+    }
 
 
 }

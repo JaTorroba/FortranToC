@@ -1,18 +1,18 @@
 package model;
 
 public class Param {
-    private final String name;
+    private final java.lang.String name;
     private final ParamType paramType;
-    private final Type type;
+    private final String type;
 
 
-    public Param(String name, ParamType paramType, Type type){
+    public Param(java.lang.String name, ParamType paramType, String type){
         this.name = name;
         this.paramType = paramType;
         this.type = type;
     }
 
-    public String getName() {
+    public java.lang.String getName() {
         return name;
     }
 
@@ -20,7 +20,7 @@ public class Param {
         return paramType;
     }
 
-    public Type getType() {
+    public String getType() {
         return type;
     }
 }

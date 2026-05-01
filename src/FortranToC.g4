@@ -10,8 +10,11 @@ grammar FortranToC;
 }
 
 prg : PROGRAM IDENT SEMI
-      dcllist {for (Constant c : this.program.getSymbols().getConstants()) c.generateCode();}
-      header sentlist END PROGRAM IDENT subproglist ;
+      dcllist
+      header
+      sentlist
+      END PROGRAM IDENT
+      subproglist {this.program.generateCode();};
 
 /*============Syntax rules:============*/
 type returns [String val, String length]
@@ -80,14 +83,14 @@ defcte [String expectedType]
        ctelist[$expectedType] SEMI;
 /*Variable*/
 defvar [String expectedType, String expectedLen]
-    : '::' {System.out.print($expectedType+" ");} varlist[$expectedType, $expectedLen] SEMI {System.out.println();} ;
+    : '::' varlist[$expectedType, $expectedLen] SEMI ;
 varlist [String expectedType, String expectedLen]
     : i=IDENT ini=init {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
-                        System.out.print($i.text+$expectedLen+" = "+$ini.val);}
+                        this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);}
     varlist_p[$expectedType, $expectedLen] ;
 varlist_p [String expectedType, String expectedLen]
     : ',' i=IDENT ini=init {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
-                            System.out.print(", "+$i.text+$expectedLen+" = "+$ini.val);}
+                            this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);}
       varlist_p[$expectedType, $expectedLen]
     | ;
 

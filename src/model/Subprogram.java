@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Optional;
 
 public class Subprogram {
-    private final String name;
+    private final java.lang.String name;
     private final boolean isFunction;
-    private final Map<String, Param> params;
-    private final Optional<Type> returnType;
+    private final Map<java.lang.String, Param> params;
+    private final Optional<String> returnType;
 
-    public Subprogram(String name, Optional<Type> returnType) {
+    public Subprogram(java.lang.String name, Optional<String> returnType) {
         this.name = name;
         this.isFunction = returnType.isPresent();
         this.returnType = returnType;

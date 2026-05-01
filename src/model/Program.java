@@ -16,11 +16,11 @@ public class Program {
         this.subprograms = new LinkedList<>();
     }
 
-    public void declareVar(String name, Type type) {
+    public void declareVar(String type, String name, String init, String len) {
         if (this.symbols.symbolIsTaken(name)) {
             throw new IllegalArgumentException("Symbol "+name+" is already taken");
         }
-        this.symbols.addVar(name, new Variable(name, type));
+        this.symbols.addVar(name, new Variable(name, type, init, len));
     }
 
     public void declareCte(String name, String value) {
@@ -31,6 +31,16 @@ public class Program {
     }
 
     public Symbols getSymbols() {return this.symbols;}
+
+    public void generateCode() {
+        for (Constant c : this.symbols.getConstants()) {
+            c.generateCode();
+        }
+
+        for (Variable v : this.symbols.getVars()) {
+            v.generateCode();
+        }
+    }
 
 
 }
