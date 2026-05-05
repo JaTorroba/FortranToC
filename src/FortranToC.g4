@@ -8,11 +8,11 @@ grammar FortranToC;
 
 @parser::members {
     public ErrorNotifier errorNotifier = new ErrorNotifier(this);
-    public Program program = new Program();
+    public Program program = Program.getInstance();
 }
 
 prg : PROGRAM IDENT SEMI
-      dcllist
+      dcllist[null]
       header
       sentlist
       END PROGRAM IDENT
@@ -62,12 +62,13 @@ init_p returns [String val, String t]
         $val = ""; $t="";};
 
 /***********Declaration List***********/ //LL1
-dcllist
-    : dcl dcllist | ;
-dcl     : type dcl_p[$type.val, $type.length] ;
-dcl_p [String expectedType, String expectedLen]
+dcllist[Subprogram scope]
+    : dcl[$scope] dcllist[$scope] | ;
+dcl [Subprogram scope]
+    : type dcl_p[$scope,$type.val, $type.length] ;
+dcl_p [Subprogram scope, String expectedType, String expectedLen]
     : defcte[$expectedType]
-    | defvar[$expectedType, $expectedLen] ;
+    | defvar[$scope, $expectedType, $expectedLen] ;
 /*Constant*/
 ctelist [String expectedType]
     : ',' i=IDENT '=' s=simpvalue ctelist[$expectedType]
@@ -79,24 +80,36 @@ ctelist [String expectedType]
 defcte [String expectedType]
     : ',' PARAMETER '::'
        i=IDENT '=' s=simpvalue
-          {if (!$expectedType.equals($s.t)) {
-             Token offToken = $i;this.errorNotifier.notifyError(offToken, "missmatched_value_type");}
-          this.program.declareCte($i.text, $s.val);}
-
+      {if (!$expectedType.equals($s.t)) {
+           this.errorNotifier.notifyError($i, "missmatched_value_type");}
+       this.program.declareCte($i.text, $s.val);}
        ctelist[$expectedType] SEMI;
+
 /*Variable*/
-defvar [String expectedType, String expectedLen]
-    : '::' varlist[$expectedType, $expectedLen] SEMI ;
+defvar [Subprogram scope, String expectedType, String expectedLen]
+    : '::' varlist[$scope, $expectedType, $expectedLen] SEMI ;
 
-varlist [String expectedType, String expectedLen]
-    : i=IDENT ini=init {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
-                        this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);}
-    varlist_p[$expectedType, $expectedLen] ;
+varlist [Subprogram scope, String expectedType, String expectedLen]
+    : i=IDENT ini=init
+    {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
+     if ($scope == null) {
+        this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);
+     } else {
+        $scope.declareLocalVar($expectedType, $i.text, $ini.val, $expectedLen);
+     }
+     }
+     varlist_p[$scope, $expectedType, $expectedLen] ;
 
-varlist_p [String expectedType, String expectedLen]
-    : ',' i=IDENT ini=init {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
-                            this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);}
-      varlist_p[$expectedType, $expectedLen]
+varlist_p [Subprogram scope, String expectedType, String expectedLen]
+    : ',' i=IDENT ini=init
+    {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
+     if ($scope == null) {
+        this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);
+     } else {
+        $scope.declareLocalVar($expectedType, $i.text, $ini.val, $expectedLen);
+     }
+     }
+     varlist_p[$scope, $expectedType, $expectedLen]
     | ;
 
 /*
@@ -274,15 +287,20 @@ codproc
     : SUBROUTINE i1=IDENT
       listP=formal_paramlist
       sParams=dec_s_paramlist[$listP.idents, new HashSet<Param>()]
-      dcllist
+      {
+          Subprogram scope = null;
+          if (!this.program.hasSubprogram($i1.text)) {
+              this.errorNotifier.notifyError($i1, "undeclared_subprogram");
+          } else {
+              scope = this.program.getSubprogram($i1.text);
+          }
+      }
+      dcllist[scope]
       sentlist
       END SUBROUTINE i2=IDENT
       {
           if (!$i1.text.equals($i2.text)) {
               this.errorNotifier.notifyError($i2, "missmatch_subroutine_name");
-          }
-          if (!this.program.hasSubprogram($i1.text)) {
-              this.errorNotifier.notifyError($i1, "undeclared_subprogram");
           } else {
               Subprogram declaredPrg = this.program.getSubprogram($i1.text);
               Set<Param> declaredParams = declaredPrg.getParams();
@@ -300,7 +318,15 @@ codfun
       '(' nParams=nomparamlist[new HashSet<String>()] ')'
       type '::' i2=IDENT SEMI
       fParams=dec_f_paramlist[$nParams.paramlist_s, new HashSet<Param>()]
-      dcllist
+      {
+          Subprogram scope = null;
+          if (!this.program.hasSubprogram($i1.text)) {
+              this.errorNotifier.notifyError($i1, "undeclared_subprogram");
+          } else {
+              scope = this.program.getSubprogram($i1.text);
+          }
+      }
+      dcllist[scope]
       //sentlist
       //IDENT = exp SEMI
       //END FUNCTION IDENT

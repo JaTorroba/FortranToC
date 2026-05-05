@@ -7,13 +7,16 @@ public class Program {
     private ProgramBody main;
     private final Map<String, Subprogram> subprograms;
     private final Symbols symbols;
+    public static final Program INSTANCE = new Program();
 
 
-    public Program() {
+    private Program() {
         this.symbols = new Symbols();
         this.main = new ProgramBody();
         this.subprograms = new HashMap<>();
     }
+
+    public static Program getInstance() {return INSTANCE;}
 
     public void declareVar(String type, String name, String init, String len) {
         if (this.symbols.symbolIsTaken(name)) {
