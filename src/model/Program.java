@@ -1,19 +1,18 @@
 package model;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 public class Program {
     private ProgramBody main;
-    private List<Subprogram> subprograms;
-    private Symbols symbols;
+    private final Map<String, Subprogram> subprograms;
+    private final Symbols symbols;
 
 
     public Program() {
         this.symbols = new Symbols();
         this.main = new ProgramBody();
-        this.subprograms = new LinkedList<>();
+        this.subprograms = new HashMap<>();
     }
 
     public void declareVar(String type, String name, String init, String len) {
@@ -30,6 +29,22 @@ public class Program {
         this.symbols.addCte(name, new Constant(name, value));
     }
 
+    public void declareSubprogram(String name, Set<Param> params, String returnType){
+        if (this.subprograms.containsKey(name)) {
+            throw new IllegalArgumentException("Symbol "+name+" is already taken");
+        }
+        Subprogram sub = new Subprogram(name, returnType, params);
+        this.subprograms.put(name, sub);
+    }
+
+    public boolean hasSubprogram(String name) {
+        return this.subprograms.containsKey(name);
+    }
+
+    public Subprogram getSubprogram(String name) {
+        return this.subprograms.get(name);
+    }
+
     public Symbols getSymbols() {return this.symbols;}
 
     public void generateCode() {
@@ -39,6 +54,10 @@ public class Program {
 
         for (Variable v : this.symbols.getVars()) {
             v.generateCode();
+        }
+
+        for (Subprogram sub : this.subprograms.values()) {
+            sub.generateCode();
         }
     }
 

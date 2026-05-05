@@ -63,6 +63,8 @@ END PROGRAM CompiladorTest
 SUBROUTINE ProcesarDatos ( valor )
     INTEGER , INTENT ( INOUT ) valor ;
 
+    ! Deberia guardarse en una tabla de simbolos del scope del procedimiento, se está guardando en la global
+    REAL :: delta = 3.1415e-2 ;
     ! sentlist interno
     valor = valor * 2 ;
 END SUBROUTINE ProcesarDatos
@@ -71,6 +73,9 @@ END SUBROUTINE ProcesarDatos
 FUNCTION CalcularArea ( base , altura ) REAL :: CalcularArea ;
     REAL , INTENT ( IN ) base ;
     REAL , INTENT ( IN ) altura ;
+
+    ! No deberia de dar problema porque el otro delta esta en otro scope
+    REAL :: delta = 3.1415e-2 ;
 
     ! sentlist_fun (Termina obligatoriamente con la asignacion y el END)
     CalcularArea = base * altura ;

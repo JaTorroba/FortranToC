@@ -1,20 +1,20 @@
 package model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class Subprogram {
-    private final java.lang.String name;
+    private final String name;
     private final boolean isFunction;
-    private final Map<java.lang.String, Param> params;
-    private final Optional<String> returnType;
+    private final Map<String, Param> params;
+    private final String returnType;
 
-    public Subprogram(java.lang.String name, Optional<String> returnType) {
+    public Subprogram(String name, String returnType, Set<Param> params) {
         this.name = name;
-        this.isFunction = returnType.isPresent();
+        this.isFunction = returnType != null;
         this.returnType = returnType;
         this.params = new HashMap<>();
+        for (Param p : params)
+            this.params.put(p.getName(), p);
     }
 
     public boolean hasParam(Param p) {
@@ -26,5 +26,29 @@ public class Subprogram {
             throw new IllegalArgumentException("Param "+p.getName()+" already exists for "+this.name);
 
         this.params.put(p.getName(), p);
+    }
+
+    public Set<Param> getParams() {
+        return new HashSet<>(this.params.values());
+    }
+
+    public String getReturnType() { return this.returnType;}
+
+
+    public void generateDeclarationCode() {
+        if (this.isFunction)
+            System.out.print(returnType+" "+this.name+" (");
+        else
+            System.out.print("void "+this.name+" (");
+        Iterator<Param> ite = this.params.values().iterator();
+        while (ite.hasNext()) {
+            Param p = ite.next();
+            System.out.print(p.getType() + " " + p.getName());
+            if (ite.hasNext()) System.out.print(", ");
+        }
+        System.out.print(")");
+    }
+    public void generateCode() {
+        this.generateDeclarationCode();
     }
 }

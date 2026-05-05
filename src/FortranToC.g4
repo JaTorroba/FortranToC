@@ -2,6 +2,8 @@ grammar FortranToC;
 
 @parser::header {
     import model.*;
+    import java.util.Set;
+    import java.util.HashSet;
 }
 
 @parser::members {
@@ -73,6 +75,7 @@ ctelist [String expectedType]
             Token offToken = $i;this.errorNotifier.notifyError(offToken, "missmatched_value_type");}
          this.program.declareCte($i.text, $s.val);}
     | ;
+
 defcte [String expectedType]
     : ',' PARAMETER '::'
        i=IDENT '=' s=simpvalue
@@ -84,10 +87,12 @@ defcte [String expectedType]
 /*Variable*/
 defvar [String expectedType, String expectedLen]
     : '::' varlist[$expectedType, $expectedLen] SEMI ;
+
 varlist [String expectedType, String expectedLen]
     : i=IDENT ini=init {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
                         this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);}
     varlist_p[$expectedType, $expectedLen] ;
+
 varlist_p [String expectedType, String expectedLen]
     : ',' i=IDENT ini=init {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
                             this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);}
@@ -112,17 +117,82 @@ header  : INTERFACE headlist END INTERFACE | ;
 headlist    : decproc decsubprog | decfun decsubprog ;
 decsubprog  : decproc decsubprog | decfun decsubprog | ;
 /*Procedure*/
-decproc : SUBROUTINE IDENT formal_paramlist dec_s_paramlist END SUBROUTINE IDENT ;
-formal_paramlist    : '(' nomparamlist ')' | ;
-nomparamlist        : IDENT nomparamlist_p ;
-nomparamlist_p      : ',' IDENT nomparamlist_p | ;
-dec_s_paramlist     : type ',' INTENT '(' paramtype ')' IDENT SEMI dec_s_paramlist | ;
+decproc
+    : SUBROUTINE i1=IDENT
+      formal_paramlist
+      dec_s_paramlist[$formal_paramlist.idents, new HashSet<Param>()]
+      END SUBROUTINE i2=IDENT
+      {if (!$i1.text.equals($i2.text)) {
+            this.errorNotifier.notifyError($i2, "missmatch_subroutine_name");
+       }
+       this.program.declareSubprogram($i1.text, $dec_s_paramlist.paramlist_s, null);
+       }
+    ;
 
-paramtype           : IN | OUT | INOUT ;
+
+//returns a list with de Strings of the declared params IDENT for later comprobation
+formal_paramlist returns [Set<String> idents]
+    : '(' nomparamlist[new HashSet<String>()] ')' { $idents = $nomparamlist.paramlist_s; }
+    | { $idents = new HashSet<String>(); }
+    ;
+nomparamlist [Set<String> paramlist_h] returns [Set<String> paramlist_s]
+    : IDENT {$paramlist_h.add($IDENT.text);}
+      nomparamlist_p[$paramlist_h] {$paramlist_s = $nomparamlist_p.paramlist_s;} ;
+
+nomparamlist_p [Set<String> paramlist_h] returns [Set<String> paramlist_s]
+    : ',' IDENT {$paramlist_h.add($IDENT.text);} //TODO: añadir comprobacion de si ya hay otra por ese nombre
+      res=nomparamlist_p[$paramlist_h] {$paramlist_s = $res.paramlist_s;}
+    | {$paramlist_s = $paramlist_h;}
+    ;
+
+//Checks whether the params declared match those declared previously on formal_paramlist
+dec_s_paramlist [Set<String> identlist_h, Set<Param> paramlist_h] returns [Set<Param> paramlist_s]
+    : type ',' INTENT '(' paramtype ')' i=IDENT
+      {
+        if (!$identlist_h.contains($i.text)) {
+            this.errorNotifier.notifyError($i, "undeclared_param");
+        }
+        // Faltaba el paréntesis de cierre aquí
+        $paramlist_h.add(new Param($i.text, $paramtype.val, $type.val));
+      }
+      SEMI res=dec_s_paramlist[$identlist_h, $paramlist_h] {$paramlist_s = $res.paramlist_s;}
+    | {$paramlist_s = $paramlist_h;}
+    ;
+
+paramtype returns [String val]
+          : IN    {$val = "IN";}
+          | OUT   {$val = "OUT";}
+          | INOUT {$val = "INOUT";};
 
 /*Function*/
-decfun  : FUNCTION IDENT '(' nomparamlist ')' type '::' IDENT SEMI dec_f_paramlist END FUNCTION IDENT ;
-dec_f_paramlist : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist | ;
+decfun
+    : FUNCTION i1=IDENT
+    '(' nomparamlist[new HashSet<String>()] ')'
+    type '::' i2=IDENT SEMI
+    dec_f_paramlist[$nomparamlist.paramlist_s, new HashSet<Param>()]
+    END FUNCTION i3=IDENT
+    { String funcName = $i1.text;
+      if (!funcName.equals($i2.text)) {
+          this.errorNotifier.notifyError($i2, "missmatch_subroutine_name");
+      }
+      if (!funcName.equals($i3.text)) {
+          this.errorNotifier.notifyError($i3, "missmatch_subroutine_name");
+      }
+      this.program.declareSubprogram($i1.text, $dec_f_paramlist.paramlist_s, $type.val);
+    }
+    ;
+
+dec_f_paramlist [Set<String> identlist_h, Set<Param> paramlist_h] returns [Set<Param> paramlist_s]
+    : type ',' INTENT '(' IN ')' i=IDENT
+    {if (!$identlist_h.contains($i.text)) {
+        this.errorNotifier.notifyError($i, "undeclared_param");
+    }
+    $paramlist_h.add(new Param($i.text, "IN", $type.val));
+    }
+    SEMI res=dec_f_paramlist[$identlist_h, $paramlist_h]
+    //return paramlist
+    {$paramlist_s = $res.paramlist_s ; }
+    | {$paramlist_s = $paramlist_h;} ;
 
 /*
 dec_f_paramlist : dec_f_paramlist_p ;
@@ -200,16 +270,57 @@ opcomp      : '<' | '>' | '<=' | '>=' | '==' | '/=' ;
 /***************Subprogram***************/
 
 subproglist : codproc subproglist | codfun subproglist | ;
-codproc     : SUBROUTINE id1=IDENT formal_paramlist dec_s_paramlist dcllist sentlist END SUBROUTINE id2=IDENT
-                    {/*$id1.text...*/};
-codfun      : FUNCTION IDENT '(' nomparamlist ')'
-                type '::' IDENT SEMI
-                dec_f_paramlist
-                dcllist
-                //sentlist
-                //IDENT = exp SEMI
-                //END FUNCTION IDENT
-                sentlist_fun;
+codproc
+    : SUBROUTINE i1=IDENT
+      listP=formal_paramlist
+      sParams=dec_s_paramlist[$listP.idents, new HashSet<Param>()]
+      dcllist
+      sentlist
+      END SUBROUTINE i2=IDENT
+      {
+          if (!$i1.text.equals($i2.text)) {
+              this.errorNotifier.notifyError($i2, "missmatch_subroutine_name");
+          }
+          if (!this.program.hasSubprogram($i1.text)) {
+              this.errorNotifier.notifyError($i1, "undeclared_subprogram");
+          } else {
+              Subprogram declaredPrg = this.program.getSubprogram($i1.text);
+              Set<Param> declaredParams = declaredPrg.getParams();
+              Set<Param> implementedParams = $sParams.paramlist_s;
+
+              if (!declaredParams.equals(implementedParams)) {
+                  this.errorNotifier.notifyError($i1, "signature_missmatch_in_implementation");
+              }
+          }
+      }
+    ;
+
+codfun
+    : FUNCTION i1=IDENT
+      '(' nParams=nomparamlist[new HashSet<String>()] ')'
+      type '::' i2=IDENT SEMI
+      fParams=dec_f_paramlist[$nParams.paramlist_s, new HashSet<Param>()]
+      dcllist
+      //sentlist
+      //IDENT = exp SEMI
+      //END FUNCTION IDENT
+      sentlist_fun
+      {
+          if (!this.program.hasSubprogram($i1.text)) {
+              this.errorNotifier.notifyError($i1, "undeclared_subprogram");
+          } else {
+              Subprogram declaredFunc = this.program.getSubprogram($i1.text);
+
+              if (!declaredFunc.getReturnType().equals($type.val)) {
+                  this.errorNotifier.notifyError($i1, "return_type_missmatch");
+              }
+
+              if (!declaredFunc.getParams().equals($fParams.paramlist_s)) {
+                  this.errorNotifier.notifyError($i1, "signature_missmatch_in_implementation");
+              }
+          }
+      }
+    ;
 
 sentlist_fun    : IDENT '=' exp SEMI sentlist_fun_p | proc_call SEMI sentlist_fun;
 sentlist_fun_p  : END FUNCTION IDENT | sentlist_fun;
