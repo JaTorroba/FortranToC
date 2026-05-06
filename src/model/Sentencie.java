@@ -3,10 +3,15 @@ package model;
 import java.util.LinkedList;
 import java.util.List;
 
-public abstract class Sentencie {
-    protected List<Expression> exp;
+public class Sentencie {
 
-    public Sentencie(){
-        this.exp = new LinkedList<>();
+    protected final String content;
+
+    public Sentencie(String content) {
+        this.content = content;
+    }
+
+    public void generateCode() {
+        System.out.println(content);
     }
 }

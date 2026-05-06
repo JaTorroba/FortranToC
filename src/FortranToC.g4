@@ -15,6 +15,7 @@ prg : PROGRAM IDENT SEMI
       dcllist[null]
       header
       sentlist
+      {this.program.addMain($sentlist.block_s);}
       END PROGRAM IDENT
       subproglist {this.program.generateCode();};
 
@@ -25,17 +26,18 @@ type returns [String val, String length]
             | CHARACTER c=charlength {$val = "char"; $length=$c.length;}
             //Error alternatives
             | error=POSSIBLE_CHAR_TYPO c=charlength
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "character_typo"); $val = "char";$length=$c.length;}
+                {this.errorNotifier.notifyError($error, "character_typo"); $val = "char";$length=$c.length;}
             | error=POSSIBLE_INT_TYPO
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "integer_typo"); $val = "int"; $length="";}
+                {this.errorNotifier.notifyError($error, "integer_typo"); $val = "int"; $length="";}
             | error=POSSIBLE_REAL_TYPO
-                {Token offToken = $error; this.errorNotifier.notifyError(offToken, "real_typo"); $val = "float"; $length="";};
+                {this.errorNotifier.notifyError($error, "real_typo"); $val = "float"; $length="";};
 
 charlength returns [String length]
             : '(' n=numint ')' {$length = "["+$n.val+"]";}
             | {$length = "";};
 numint returns [Integer val]
     : n=NUM_INT_CONST   { $val = Integer.parseInt($n.text); }
+    //TODO: implementar conversion de diferentes formatos segun la practica
     | n=NUM_INT_CONST_B { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 2); }
     | n=NUM_INT_CONST_H { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 16); }
     | n=NUM_INT_CONST_O { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 8); }
@@ -55,11 +57,15 @@ init_p returns [String val, String t]
     : s=simpvalue {$val = $s.val; $t=$s.t;}
     //Error alternatives
     | error=IDENT
-        {Token offToken = $error; this.errorNotifier.notifyError(offToken, "var_init");
-        $val = ""; $t="";}
+        {
+        this.errorNotifier.notifyError($error, "var_init");
+        $val = ""; $t="";
+        }
     | /* empty */
-        {Token offToken = _input.LT(1); this.errorNotifier.notifyError(offToken, "miss_var_init");
-        $val = ""; $t="";};
+        {
+        this.errorNotifier.notifyError(_input.LT(1), "miss_var_init");
+        $val = ""; $t="";
+        };
 
 /***********Declaration List***********/ //LL1
 dcllist[Subprogram scope]
@@ -73,7 +79,7 @@ dcl_p [Subprogram scope, String expectedType, String expectedLen]
 ctelist [String expectedType]
     : ',' i=IDENT '=' s=simpvalue ctelist[$expectedType]
         {if (!$expectedType.equals($s.t)) {
-            Token offToken = $i;this.errorNotifier.notifyError(offToken, "missmatched_value_type");}
+            this.errorNotifier.notifyError($i, "missmatched_value_type");}
          this.program.declareCte($i.text, $s.val);}
     | ;
 
@@ -216,16 +222,50 @@ dec_f_paramlist_p   : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist_p | 
 
 /*Sentencies*/
 //sentlist  : sent | sentlist sent // not LL
-sentlist    : sent sentlist_p;
-sentlist_p  : sent sentlist_p | ;
-sent        : IDENT '=' exp SEMI | proc_call SEMI
-            | IF '(' expcond ')' if_body
-            | DO loop_body
-            | SELECT CASE '(' exp ')' cases END SELECT;
+sentlist returns [ProgramBody block_s]
+    :
+    {ProgramBody block_h = new ProgramBody();}
+    sent
+    {block_h.addSentencie($sent.val);}
+    sentlist_p[block_h]
+    {$block_s = $sentlist_p.block_s;} ;
+
+sentlist_p  [ProgramBody block_h] returns [ProgramBody block_s]
+    :
+    sent
+    {$block_h.addSentencie($sent.val);}
+    sentlist_p[$block_h]
+    {$block_s = $sentlist_p.block_s;}
+    | {$block_s = $block_h;};
+
+sent returns [Sentencie val]
+        :
+        IDENT '=' exp SEMI  {$val = new Sentencie($IDENT.text + " = "+$exp.val+";");}
+        | proc_call SEMI    {$val = new Sentencie($proc_call.val);}
+        | IF '(' expcond ')' if_body
+            {ConditionSentencie sent = new ConditionSentencie("if ("+$expcond.val+") ");
+             sent.addIfBody($if_body.if);
+             sent.addElseBody($if_body.else);
+             $val = sent;
+            }
+        | DO loop_body
+        | SELECT CASE '(' exp ')' cases END SELECT;
 
 
-if_body     : sent | THEN sentlist if_body_p;
-if_body_p   : ENDIF | ELSE sentlist ENDIF;
+if_body returns [ProgramBody if, ProgramBody else]
+    :
+    sent {$if = new ProgramBody(); $if.addSentencie($sent.val); $else = null;}
+    |
+    THEN
+    sentlist
+    if_body_p
+    {$if = $sentlist.block_s;
+     $else = $if_body_p.else;}
+    ;
+
+if_body_p  returns [ProgramBody else]
+    : ENDIF               {$else = null;}
+    | ELSE sentlist ENDIF {$else = $sentlist.block_s;};
 
 loop_body   : WHILE '(' expcond ')' sentlist ENDDO
             | IDENT '=' doval ',' doval ',' doval sentlist ENDDO;
@@ -254,26 +294,100 @@ not LL1 for exp_p
 exp         : factor exp_p;
 exp_p       : op exp exp_p | ;
 */
-exp         : factor exp_p;
-exp_p       : oparit factor exp_p | ;
+exp returns[String val]
+        :
+        factor
+        {StringBuilder sb = new StringBuilder();
+        sb.append($factor.val);}
+        exp_p[sb]
+        {$val = $exp_p.val;}
+        ;
 
-oparit      : '+' | '-' | '*' | '/';
+exp_p[StringBuilder sb] returns[String val]
+      :
+      oparit
+      {sb.append($oparit.val);}
+      factor
+      {sb.append($factor.val);}
+      res=exp_p[sb]
+      {$val = $res.val;}
+      | {$val = sb.toString();};
+
+oparit returns [String val]
+    : '+' {$val = " + ";}
+    | '-' {$val = " - ";}
+    | '*' {$val = " * ";}
+    | '/' {$val = " / ";} ;
 //factor      : simpvalue | '(' exp ')' | IDENT '(' exp explist ')' | IDENT; // not LL1
-factor      : simpvalue | '(' exp ')' | IDENT subpparamlist;
-proc_call   : CALL IDENT subpparamlist;
-subpparamlist   : '(' exp explist ')'| ;
-explist     : ',' exp explist | ;
+factor returns [String val]
+    : simpvalue     {$val = $simpvalue.val;}
+    | '(' exp ')'   {$val = $exp.val;}
+    | IDENT subpparamlist {$val = $IDENT.text+$subpparamlist.val;};
+
+proc_call returns[String val]
+    : CALL IDENT subpparamlist
+    {$val = $IDENT.text+$subpparamlist.val;}
+    ;
+
+subpparamlist returns [String val]
+   : '(' exp explist ')'
+     {$val = "(" + $exp.val + $explist.val + ")";}
+   | {$val = "";}
+   ;
+
+explist returns [String val]
+    : ',' exp res=explist {$val = ", "+$exp.val+$res.val;}
+    | {$val = "";};
 
 /*Condition sentencies*/
 //expcond     : expcond oplog expcond | factorcond;
-expcond     : factorcond expcond_p;
-expcond_p   : oplog factorcond expcond_p | ;
-oplog       : OR | AND | EQV | NEQV;
+expcond returns [String val]
+    :
+    factorcond
+    {StringBuilder sb = new StringBuilder();
+    sb.append($factorcond.val);}
+    expcond_p[sb]
+    {$val = $expcond_p.val;}
+    ;
 
-factorcond    : exp opcomp exp | '(' expcond ')' | NOT factorcond | TRUE | FALSE; //LL(K)
+expcond_p[StringBuilder sb] returns[String val]
+    :
+    oplog
+    {$sb.append($oplog.val);}
+    factorcond
+    {$sb.append($factorcond.val);}
+    res=expcond_p[sb]
+    {$val = $res.val;}
+    | {$val = $sb.toString();};
 
+oplog returns [String val]
+    : OR   {$val = " || ";}
+    | AND  {$val = " && ";}
+    | EQV  {$val = " == ";}
+    | NEQV {$val = " != ";};
 
-opcomp      : '<' | '>' | '<=' | '>=' | '==' | '/=' ;
+factorcond returns [String val] //LL(k)
+    :
+    e1=exp opcomp e2=exp
+    {$val = $e1.val + $opcomp.val + $e2.val;}
+    |
+    '(' expcond ')'
+    {$val = "(" + $expcond.val + ")";}
+    |
+    NOT c=factorcond
+    {$val = "!(" + $c.val + ")";}
+    | TRUE  {$val = "true";}
+    | FALSE {$val = "false";}
+    ;
+
+opcomp returns [String val]
+    : '<'  { $val = " < ";  }
+    | '>'  { $val = " > ";  }
+    | '<=' { $val = " <= "; }
+    | '>=' { $val = " >= "; }
+    | '==' { $val = " == "; }
+    | '/=' { $val = " != "; }
+    ;
 
 
 
@@ -309,6 +423,7 @@ codproc
               if (!declaredParams.equals(implementedParams)) {
                   this.errorNotifier.notifyError($i1, "signature_missmatch_in_implementation");
               }
+              declaredPrg.addImplementation($sentlist.block_s);
           }
       }
     ;

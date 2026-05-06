@@ -50,6 +50,10 @@ public class Program {
 
     public Symbols getSymbols() {return this.symbols;}
 
+    public void addMain(ProgramBody main) {
+        this.main = main;
+    }
+
     public void generateCode() {
         for (Constant c : this.symbols.getConstants()) {
             c.generateCode();
@@ -58,6 +62,8 @@ public class Program {
         for (Variable v : this.symbols.getVars()) {
             v.generateCode();
         }
+
+        this.main.generateCode();
 
         for (Subprogram sub : this.subprograms.values()) {
             sub.generateCode();

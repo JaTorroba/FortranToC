@@ -9,4 +9,15 @@ public class ProgramBody {
     public ProgramBody(){
         this.sentencies = new LinkedList<>();
     }
+
+    public void addSentencie(Sentencie s) {
+        this.sentencies.addLast(s);
+    }
+
+    public void generateCode() {
+        for (Sentencie s : this.sentencies) {
+            s.generateCode();
+        }
+    }
 }
+

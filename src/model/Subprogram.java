@@ -8,6 +8,7 @@ public class Subprogram {
     private final Map<String, Param> params;
     private final String returnType;
     private final Symbols localSymbols;
+    private ProgramBody implementation;
 
     public Subprogram(String name, String returnType, Set<Param> params) {
         this.name = name;
@@ -36,6 +37,17 @@ public class Subprogram {
 
     public String getReturnType() { return this.returnType;}
 
+    public void declareLocalVar(String type, String name, String init, String len) {
+        Symbols globalSymbols = Program.getInstance().getSymbols();
+        if (globalSymbols.symbolIsTaken(name) || localSymbols.symbolIsTaken(name)) {
+            throw new IllegalArgumentException("Symbol "+name+" is already taken");
+        }
+        this.localSymbols.addVar(name, new Variable(name, type, init, len));
+    }
+
+    public void addImplementation(ProgramBody imp) {
+        this.implementation = imp;
+    }
 
     public void generateDeclarationCode() {
         if (this.isFunction)
@@ -51,14 +63,6 @@ public class Subprogram {
         System.out.print(")");
     }
 
-    public void declareLocalVar(String type, String name, String init, String len) {
-        Symbols globalSymbols = Program.getInstance().getSymbols();
-        if (globalSymbols.symbolIsTaken(name) || localSymbols.symbolIsTaken(name)) {
-            throw new IllegalArgumentException("Symbol "+name+" is already taken");
-        }
-        this.localSymbols.addVar(name, new Variable(name, type, init, len));
-    }
-
     public void generateCode() {
         this.generateDeclarationCode();
         System.out.println(" {");
@@ -66,6 +70,7 @@ public class Subprogram {
             System.out.print("\t");
             var.generateCode();
         }
+        //if (this.implementation != null) this.implementation.generateCode();
         System.out.println("}");
     }
 }
