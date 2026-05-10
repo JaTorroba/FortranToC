@@ -249,7 +249,13 @@ sent returns [Sentencie val]
              $val = sent;
             }
         | DO loop_body
-        | SELECT CASE '(' exp ')' cases END SELECT;
+            {$val = $loop_body.val;}
+        |
+        SELECT CASE '(' exp ')'
+            {SelectSentencie sent = new SelectSentencie("switch ("+$exp.val+")");}
+        cases[sent]
+            {$val = sent;}
+        END SELECT;
 
 
 if_body returns [ProgramBody if, ProgramBody else]
@@ -267,25 +273,75 @@ if_body_p  returns [ProgramBody else]
     : ENDIF               {$else = null;}
     | ELSE sentlist ENDIF {$else = $sentlist.block_s;};
 
-loop_body   : WHILE '(' expcond ')' sentlist ENDDO
-            | IDENT '=' doval ',' doval ',' doval sentlist ENDDO;
-doval       : NUM_INT_CONST | IDENT;
+loop_body returns[LoopSentencie val]
+    :
+    WHILE '(' expcond ')'
+    {LoopSentencie sent = new LoopSentencie("while ( "+$expcond.val+" ) ");}
+    sentlist
+    {sent.addBody($sentlist.block_s);}
+    ENDDO
+    {$val = sent;}
+    |
+    IDENT '=' d1=doval ',' d2=doval ',' d3=doval
+    {String content = "for("+$IDENT.text+"="+$d1.val+ " ; "+$IDENT.text+"!="+$d2.val+" ; "+$IDENT.text+"="+$IDENT.text+"+"+$d3.val;
+     LoopSentencie sent = new LoopSentencie(content);}
+    sentlist
+    {sent.addBody($sentlist.block_s);}
+    ENDDO
+    {$val = sent;}
+    ;
 
-cases       : CASE cases_p
-            |
-            | error=DEFAULT sentlist
-                {Token offToken = $error;this.errorNotifier.notifyError(offToken, "miss_case_default");};
 
-cases_p     : '(' tags ')' sentlist cases
-            | DEFAULT sentlist
-            //Error alternatives
-            | error=tags sentlist cases
-                {Token offToken = $error.start;this.errorNotifier.notifyError(offToken, "miss_cond_par");};
+doval returns[String val]
+    : NUM_INT_CONST  {$val = $NUM_INT_CONST.text;}
+    | IDENT          {$val = $IDENT.text;}
+    ;
 
-tags        : simpvalue tags_p | ':' simpvalue;
-tags_p      : tagslist | ':' tags_pp;
-tags_pp     : simpvalue | ;
-tagslist    : ',' simpvalue tagslist | ;
+cases[SelectSentencie select]
+    : CASE cases_p[$select]
+    |
+    | error=DEFAULT sentlist
+         {this.errorNotifier.notifyError($error, "miss_case_default");};
+
+cases_p[SelectSentencie select]
+    :
+    '(' tags[$select] ')'
+        {CaseSentencie caseSent = new CaseSentencie("case "+$tags.val+":");
+         caseSent.setValue($tags.val);}
+    sentlist
+        {caseSent.addBody($sentlist.block_s);
+         $select.addCaseClause(caseSent);}
+    cases[$select]
+    | DEFAULT sentlist
+        {CaseSentencie def = new CaseSentencie("default:");
+         def.addBody($sentlist.block_s);
+         $select.addDefaultClause(def);}
+    //Error alternatives
+    | error=tags[$select] sentlist cases[$select]
+        {this.errorNotifier.notifyError($error.start, "miss_cond_par");};
+
+tags[SelectSentencie select] returns[String val]
+    : simpvalue tags_p[$select, $simpvalue.val]
+        {if ($tags_p.val.equals(">")) $val = "> "+$simpvalue.val;
+         else $val = $simpvalue.val + $tags_p.val;}
+    | ':' simpvalue {$val = "< "+$simpvalue.val;};
+
+tags_p[SelectSentencie select, String prevVal] returns[String val]
+    : tagslist[$select, $prevVal] {$val = "";}
+    | ':' tags_pp
+         {
+         if ($tags_pp.val == null) $val = ">";
+         else $val = " to "+$tags_pp.val;
+         };
+
+tags_pp returns[String val]
+    : simpvalue {$val = $simpvalue.val;}
+    |           {$val = null;}
+    ;
+
+tagslist[SelectSentencie select, String prevVal]
+    : ',' simpvalue {$select.duplicateCaseForVal($prevVal, $simpvalue.val);} tagslist[$select, $prevVal]
+    | ;
 /*
 not LL
 exp : exp op exp | factor;
@@ -320,9 +376,9 @@ oparit returns [String val]
     | '/' {$val = " / ";} ;
 //factor      : simpvalue | '(' exp ')' | IDENT '(' exp explist ')' | IDENT; // not LL1
 factor returns [String val]
-    : simpvalue     {$val = $simpvalue.val;}
-    | '(' exp ')'   {$val = $exp.val;}
-    | IDENT subpparamlist {$val = $IDENT.text+$subpparamlist.val;};
+    : simpvalue             {$val = $simpvalue.val;}
+    | '(' exp ')'           {$val = $exp.val;}
+    | IDENT subpparamlist   {$val = $IDENT.text+$subpparamlist.val;};
 
 proc_call returns[String val]
     : CALL IDENT subpparamlist
@@ -363,8 +419,8 @@ expcond_p[StringBuilder sb] returns[String val]
 oplog returns [String val]
     : OR   {$val = " || ";}
     | AND  {$val = " && ";}
-    | EQV  {$val = " == ";}
-    | NEQV {$val = " != ";};
+    | EQV  {$val = " !^ ";}
+    | NEQV {$val = " ^ ";};
 
 factorcond returns [String val] //LL(k)
     :
@@ -376,8 +432,8 @@ factorcond returns [String val] //LL(k)
     |
     NOT c=factorcond
     {$val = "!(" + $c.val + ")";}
-    | TRUE  {$val = "true";}
-    | FALSE {$val = "false";}
+    | TRUE  {$val = "1";}
+    | FALSE {$val = "0";}
     ;
 
 opcomp returns [String val]
