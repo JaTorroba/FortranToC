@@ -67,10 +67,9 @@ public class Subprogram {
         this.generateDeclarationCode();
         System.out.println(" {");
         for (Variable var : this.localSymbols.getVars()) {
-            System.out.print("\t");
-            var.generateCode();
+            var.generateCode(1);
         }
-        //if (this.implementation != null) this.implementation.generateCode();
+        if (this.implementation != null) this.implementation.generateCode(1);
         System.out.println("}");
     }
 }

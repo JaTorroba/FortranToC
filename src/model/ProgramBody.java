@@ -15,8 +15,12 @@ public class ProgramBody {
     }
 
     public void generateCode() {
+        generateCode(0);
+    }
+
+    public void generateCode(int indentLevel) {
         for (Sentencie s : this.sentencies) {
-            s.generateCode();
+            s.generateCode(indentLevel);
         }
     }
 }

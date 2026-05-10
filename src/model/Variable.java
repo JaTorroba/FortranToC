@@ -26,10 +26,18 @@ public class Variable {
     public String getInit() {return init;}
 
     public void generateCode() {
+        generateCode(0);
+    }
+
+    public void generateCode(int indentLevel) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < indentLevel; i++) sb.append("\t");
+        String indent = sb.toString();
+
         if (this.isChar)
-            System.out.println(this.type+" "+this.name+this.length+" = "+this.init+";");
+            System.out.println(indent + this.type+" "+this.name+this.length+" = "+this.init+";");
         else
-            System.out.println(this.type+" "+this.name+" = "+this.init+";");
+            System.out.println(indent + this.type+" "+this.name+" = "+this.init+";");
 
     }
 

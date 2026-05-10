@@ -21,17 +21,17 @@ public class ConditionSentencie extends Sentencie{
     }
 
     @Override
-    public void generateCode() {
-        System.out.print(this.content);
+    public void generateCode(int indentLevel) {
+        System.out.print(indent(indentLevel) + this.content);
         if (this.ifBody != null) {
             System.out.println(" {");
-            this.ifBody.generateCode();
-            System.out.print("}");
+            this.ifBody.generateCode(indentLevel + 1);
+            System.out.print(indent(indentLevel) + "}");
         }
         if (this.elseBody != null) {
             System.out.println(" else {");
-            this.elseBody.generateCode();
-            System.out.print("}");
+            this.elseBody.generateCode(indentLevel + 1);
+            System.out.print(indent(indentLevel) + "}");
         }
         System.out.println();
     }

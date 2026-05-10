@@ -27,9 +27,14 @@ public class CaseSentencie extends Sentencie{
 
     @Override
     public void generateCode(){
-        System.out.println(this.content);
-        this.body.generateCode();
-        System.out.println("break;");
+        generateCode(0);
+    }
+
+    @Override
+    public void generateCode(int indentLevel){
+        System.out.println(indent(indentLevel) + this.content);
+        this.body.generateCode(indentLevel + 1);
+        System.out.println(indent(indentLevel + 1) + "break;");
     }
 
 

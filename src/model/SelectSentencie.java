@@ -31,18 +31,24 @@ public class SelectSentencie extends Sentencie{
     }
 
     @Override
-    public void generateCode() {
-        System.out.print(this.content);
+    public void generateCode(int indentLevel) {
+        System.out.print(indent(indentLevel) + this.content);
+        System.out.println(" {");
         for (CaseSentencie c : this.casesList){
             if (this.duplicateCases.containsKey(c.getValue())) {
-                System.out.println(c.content);
+                System.out.println(indent(indentLevel + 1) + c.content);
                 for (String dupCase : this.duplicateCases.get(c.getValue())) {
-                    System.out.println("case "+dupCase+":");
+                    System.out.println(indent(indentLevel + 1) + "case "+dupCase+":");
                 }
-                c.getBody().generateCode();
+                c.getBody().generateCode(indentLevel + 2);
+                System.out.println(indent(indentLevel + 2) + "break;");
             } else {
-                c.generateCode();
+                c.generateCode(indentLevel + 1);
             }
         }
+        if (this.defaultClause != null) {
+            this.defaultClause.generateCode(indentLevel + 1);
+        }
+        System.out.println(indent(indentLevel) + "}");
     }
 }

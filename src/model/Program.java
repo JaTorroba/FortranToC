@@ -59,11 +59,19 @@ public class Program {
             c.generateCode();
         }
 
-        for (Variable v : this.symbols.getVars()) {
-            v.generateCode();
+        for (Subprogram sub : this.subprograms.values()) {
+            sub.generateDeclarationCode();
+            System.out.println(";");
         }
 
-        this.main.generateCode();
+        System.out.println("void main (void) {");
+        for (Variable v : this.symbols.getVars()) {
+            v.generateCode(1);
+        }
+
+        this.main.generateCode(1);
+
+        System.out.println("}");
 
         for (Subprogram sub : this.subprograms.values()) {
             sub.generateCode();

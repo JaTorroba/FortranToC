@@ -13,11 +13,11 @@ public class LoopSentencie extends Sentencie{
     }
 
     @Override
-    public void generateCode() {
-        System.out.print(this.content);
+    public void generateCode(int indentLevel) {
+        System.out.print(indent(indentLevel) + this.content);
         System.out.println(" {");
-        this.body.generateCode();
-        System.out.println("}");
+        this.body.generateCode(indentLevel + 1);
+        System.out.println(indent(indentLevel) + "}");
     }
 
 }
