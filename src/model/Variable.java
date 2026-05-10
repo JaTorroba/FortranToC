@@ -35,9 +35,15 @@ public class Variable {
         String indent = sb.toString();
 
         if (this.isChar)
-            System.out.println(indent + this.type+" "+this.name+this.length+" = "+this.init+";");
+            if (this.init.isEmpty())
+                System.out.println(indent + this.type+" "+this.name+this.length+";");
+            else
+                System.out.println(indent + this.type+" "+this.name+this.length+" = "+this.init+";");
         else
-            System.out.println(indent + this.type+" "+this.name+" = "+this.init+";");
+            if (this.init.isEmpty())
+                System.out.println(indent + this.type+" "+this.name+";");
+            else
+                System.out.println(indent + this.type+" "+this.name+" = "+this.init+";");
 
     }
 

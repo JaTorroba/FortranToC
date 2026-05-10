@@ -17,7 +17,7 @@ prg : PROGRAM IDENT SEMI
       sentlist
       {this.program.addMain($sentlist.block_s);}
       END PROGRAM IDENT
-      subproglist {this.program.generateCode();};
+      subproglist {if (this.getNumberOfSyntaxErrors() == 0) this.program.generateCode();};
 
 /*============Syntax rules:============*/
 type returns [String val, String length]
@@ -97,22 +97,38 @@ defvar [Subprogram scope, String expectedType, String expectedLen]
 
 varlist [Subprogram scope, String expectedType, String expectedLen]
     : i=IDENT ini=init
-    {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
+    {if (!$ini.t.isEmpty() && !$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
      if ($scope == null) {
-        this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);
+        try {
+            this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);
+        } catch (IllegalArgumentException e) {
+            this.errorNotifier.notifyError($i, "symbol_already_taken");
+        }
      } else {
-        $scope.declareLocalVar($expectedType, $i.text, $ini.val, $expectedLen);
+        try {
+            $scope.declareLocalVar($expectedType, $i.text, $ini.val, $expectedLen);
+        } catch (IllegalArgumentException e) {
+            this.errorNotifier.notifyError($i, "symbol_already_taken");
+        }
      }
      }
      varlist_p[$scope, $expectedType, $expectedLen] ;
 
 varlist_p [Subprogram scope, String expectedType, String expectedLen]
     : ',' i=IDENT ini=init
-    {if (!$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
+    {if (!$ini.t.isEmpty() && !$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
      if ($scope == null) {
-        this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);
+        try {
+            this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);
+        } catch (IllegalArgumentException e) {
+            this.errorNotifier.notifyError($i, "symbol_already_taken");
+        }
      } else {
-        $scope.declareLocalVar($expectedType, $i.text, $ini.val, $expectedLen);
+        try {
+            $scope.declareLocalVar($expectedType, $i.text, $ini.val, $expectedLen);
+        } catch (IllegalArgumentException e) {
+            this.errorNotifier.notifyError($i, "symbol_already_taken");
+        }
      }
      }
      varlist_p[$scope, $expectedType, $expectedLen]

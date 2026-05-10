@@ -27,12 +27,13 @@ public class ErrorNotifier {
         this.msgMap.put("miss_var_init","Missing variable initialization value before '%1$s'");
         this.msgMap.put("miss_cond_par", "Missing '( )' around condition, found: '%1$s...', expecting: (%1$s...)");
         this.msgMap.put("miss_case_default", "Missing 'CASE' before DEFAULT, found: '%1$s', expecting: CASE DEFAULT");
-        this.msgMap.put("missatched_value_type", "Type declared for: '%1$s', does not correspond to the assigned value");
+        this.msgMap.put("missmatched_value_type", "Type declared for: '%1$s', does not correspond to the assigned value");
         this.msgMap.put("undeclared_param", "No param declared by the name: '%1$s'");
         this.msgMap.put("missmatch_subroutine_name", "The subroutine's name must be the same in all parts of the declaration");
         this.msgMap.put("signature_missmatch_in_implementation", "The implementation for the subroutine: '%1$s' does not corespond to the previous declaration signature");
         this.msgMap.put("return_type_missmatch", "The return type previously declared for the function: '%1$s' does not match the new given type");
         this.msgMap.put("undeclared_subprogram", "There is no subroutine declared for the name: '%1$s'");
+        this.msgMap.put("symbol_already_taken", "The name: '%1$s' has already been assigned to another symbol");
 
     }
 

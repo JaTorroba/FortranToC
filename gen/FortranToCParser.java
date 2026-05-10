@@ -211,7 +211,7 @@ public class FortranToCParser extends Parser {
 			match(IDENT);
 			setState(122);
 			subproglist();
-			this.program.generateCode();
+			if (this.getNumberOfSyntaxErrors() == 0) this.program.generateCode();
 			}
 		}
 		catch (RecognitionException re) {
@@ -1167,11 +1167,19 @@ public class FortranToCParser extends Parser {
 			((VarlistContext)_localctx).i = match(IDENT);
 			setState(223);
 			((VarlistContext)_localctx).ini = init();
-			if (!_localctx.expectedType.equals(((VarlistContext)_localctx).ini.t)) this.errorNotifier.notifyError(((VarlistContext)_localctx).i, "missmatched_value_type");
+			if (!((VarlistContext)_localctx).ini.t.isEmpty() && !_localctx.expectedType.equals(((VarlistContext)_localctx).ini.t)) this.errorNotifier.notifyError(((VarlistContext)_localctx).i, "missmatched_value_type");
 			     if (_localctx.scope == null) {
-			        this.program.declareVar(_localctx.expectedType, (((VarlistContext)_localctx).i!=null?((VarlistContext)_localctx).i.getText():null), ((VarlistContext)_localctx).ini.val, _localctx.expectedLen);
+			        try {
+			            this.program.declareVar(_localctx.expectedType, (((VarlistContext)_localctx).i!=null?((VarlistContext)_localctx).i.getText():null), ((VarlistContext)_localctx).ini.val, _localctx.expectedLen);
+			        } catch (IllegalArgumentException e) {
+			            this.errorNotifier.notifyError(((VarlistContext)_localctx).i, "symbol_already_taken");
+			        }
 			     } else {
-			        _localctx.scope.declareLocalVar(_localctx.expectedType, (((VarlistContext)_localctx).i!=null?((VarlistContext)_localctx).i.getText():null), ((VarlistContext)_localctx).ini.val, _localctx.expectedLen);
+			        try {
+			            _localctx.scope.declareLocalVar(_localctx.expectedType, (((VarlistContext)_localctx).i!=null?((VarlistContext)_localctx).i.getText():null), ((VarlistContext)_localctx).ini.val, _localctx.expectedLen);
+			        } catch (IllegalArgumentException e) {
+			            this.errorNotifier.notifyError(((VarlistContext)_localctx).i, "symbol_already_taken");
+			        }
 			     }
 			     
 			setState(225);
@@ -1242,11 +1250,19 @@ public class FortranToCParser extends Parser {
 				((Varlist_pContext)_localctx).i = match(IDENT);
 				setState(229);
 				((Varlist_pContext)_localctx).ini = init();
-				if (!_localctx.expectedType.equals(((Varlist_pContext)_localctx).ini.t)) this.errorNotifier.notifyError(((Varlist_pContext)_localctx).i, "missmatched_value_type");
+				if (!((Varlist_pContext)_localctx).ini.t.isEmpty() && !_localctx.expectedType.equals(((Varlist_pContext)_localctx).ini.t)) this.errorNotifier.notifyError(((Varlist_pContext)_localctx).i, "missmatched_value_type");
 				     if (_localctx.scope == null) {
-				        this.program.declareVar(_localctx.expectedType, (((Varlist_pContext)_localctx).i!=null?((Varlist_pContext)_localctx).i.getText():null), ((Varlist_pContext)_localctx).ini.val, _localctx.expectedLen);
+				        try {
+				            this.program.declareVar(_localctx.expectedType, (((Varlist_pContext)_localctx).i!=null?((Varlist_pContext)_localctx).i.getText():null), ((Varlist_pContext)_localctx).ini.val, _localctx.expectedLen);
+				        } catch (IllegalArgumentException e) {
+				            this.errorNotifier.notifyError(((Varlist_pContext)_localctx).i, "symbol_already_taken");
+				        }
 				     } else {
-				        _localctx.scope.declareLocalVar(_localctx.expectedType, (((Varlist_pContext)_localctx).i!=null?((Varlist_pContext)_localctx).i.getText():null), ((Varlist_pContext)_localctx).ini.val, _localctx.expectedLen);
+				        try {
+				            _localctx.scope.declareLocalVar(_localctx.expectedType, (((Varlist_pContext)_localctx).i!=null?((Varlist_pContext)_localctx).i.getText():null), ((Varlist_pContext)_localctx).ini.val, _localctx.expectedLen);
+				        } catch (IllegalArgumentException e) {
+				            this.errorNotifier.notifyError(((Varlist_pContext)_localctx).i, "symbol_already_taken");
+				        }
 				     }
 				     
 				setState(231);
