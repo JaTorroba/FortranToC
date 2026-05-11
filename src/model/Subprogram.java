@@ -20,17 +20,6 @@ public class Subprogram {
             this.params.put(p.getName(), p);
     }
 
-    public boolean hasParam(Param p) {
-        return this.params.containsKey(p.getName());
-    }
-
-    public void addParam(Param p){
-        if (this.params.containsKey(p.getName()))
-            throw new IllegalArgumentException("Param "+p.getName()+" already exists for "+this.name);
-
-        this.params.put(p.getName(), p);
-    }
-
     public Set<Param> getParams() {
         return new HashSet<>(this.params.values());
     }
@@ -69,7 +58,9 @@ public class Subprogram {
         for (Variable var : this.localSymbols.getVars()) {
             var.generateCode(1);
         }
+
         if (this.implementation != null) this.implementation.generateCode(1);
+
         System.out.println("}");
     }
 }

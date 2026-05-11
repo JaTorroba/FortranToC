@@ -34,7 +34,7 @@ public class ErrorNotifier {
         this.msgMap.put("return_type_missmatch", "The return type previously declared for the function: '%1$s' does not match the new given type");
         this.msgMap.put("undeclared_subprogram", "There is no subroutine declared for the name: '%1$s'");
         this.msgMap.put("symbol_already_taken", "The name: '%1$s' has already been assigned to another symbol");
-
+        this.msgMap.put("bad_return_sentencie", "The returns value for the function must be assigned with the same identifier declared for the subroutine");
     }
 
     public void notifyError(Token offToken, String msgKey) {

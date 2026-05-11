@@ -249,22 +249,23 @@ sentlist returns [ProgramBody block_s]
 sentlist_p  [ProgramBody block_h] returns [ProgramBody block_s]
     :
     sent
-    {$block_h.addSentencie($sent.val);}
+        {$block_h.addSentencie($sent.val);}
     sentlist_p[$block_h]
-    {$block_s = $sentlist_p.block_s;}
-    | {$block_s = $block_h;};
+        {$block_s = $sentlist_p.block_s;}
+    |   {$block_s = $block_h;};
 
 sent returns [Sentencie val]
-        :
-        IDENT '=' exp SEMI  {$val = new Sentencie($IDENT.text + " = "+$exp.val+";");}
+        : IDENT '=' exp SEMI  {$val = new Sentencie($IDENT.text + " = "+$exp.val+";");}
         | proc_call SEMI    {$val = new Sentencie($proc_call.val);}
-        | IF '(' expcond ')' if_body
+        |
+        IF '(' expcond ')' if_body
             {ConditionSentencie sent = new ConditionSentencie("if ("+$expcond.val+") ");
              sent.addIfBody($if_body.if);
              sent.addElseBody($if_body.else);
              $val = sent;
             }
-        | DO loop_body
+        |
+        DO loop_body
             {$val = $loop_body.val;}
         |
         SELECT CASE '(' exp ')'
@@ -514,13 +515,17 @@ codfun
           }
       }
       dcllist[scope]
+      //Not LL1 for sentlist_p as FOLLOW = FOLLOW sentlist = IDENT.... for sent prod
       //sentlist
-      //IDENT = exp SEMI
-      //END FUNCTION IDENT
-      sentlist_fun
+      //ret=IDENT '=' exp SEMI
+      //END FUNCTION i3=IDENT
+      {   ProgramBody imp = new ProgramBody();}
+      sentlist_fun[$i1.text, imp]
       {
           if (!this.program.hasSubprogram($i1.text)) {
               this.errorNotifier.notifyError($i1, "undeclared_subprogram");
+          } else if (!$i1.text.equals($i2.text)) {
+              this.errorNotifier.notifyError($i2, "missmatch_subroutine_name");
           } else {
               Subprogram declaredFunc = this.program.getSubprogram($i1.text);
 
@@ -531,12 +536,52 @@ codfun
               if (!declaredFunc.getParams().equals($fParams.paramlist_s)) {
                   this.errorNotifier.notifyError($i1, "signature_missmatch_in_implementation");
               }
+
+              declaredFunc.addImplementation(imp);
           }
       }
     ;
 
-sentlist_fun    : IDENT '=' exp SEMI sentlist_fun_p | proc_call SEMI sentlist_fun;
-sentlist_fun_p  : END FUNCTION IDENT | sentlist_fun;
+
+sentlist_fun[String funName, ProgramBody imp]
+    : IDENT '=' exp SEMI
+        {if ($funName.equals($IDENT.text))
+            $imp.addSentencie(new Sentencie("return "+$exp.val+";"));
+         else
+            $imp.addSentencie(new Sentencie($IDENT.text+" = "+$exp.val+";"));}
+      sentlist_fun_p[$funName, $IDENT.text, $imp]
+    | proc_call SEMI
+        {$imp.addSentencie(new Sentencie($proc_call.val));}
+      sentlist_fun[$funName, $imp]
+    |
+    IF '(' expcond ')' if_body
+        {ConditionSentencie sent = new ConditionSentencie("if ("+$expcond.val+") ");
+         sent.addIfBody($if_body.if);
+         sent.addElseBody($if_body.else);
+         $imp.addSentencie(sent);
+        }
+    sentlist_fun[$funName, $imp]
+    |
+    DO loop_body
+        {$imp.addSentencie($loop_body.val);}
+    sentlist_fun[$funName, $imp]
+    |
+    SELECT CASE '(' exp ')'
+        {SelectSentencie sent = new SelectSentencie("switch ("+$exp.val+")");}
+    cases[sent]
+        {$imp.addSentencie(sent);}
+    END SELECT
+    sentlist_fun[$funName, $imp]
+    ;
+
+
+sentlist_fun_p[String funName, String lastName, ProgramBody imp]
+    : END FUNCTION IDENT
+        {if (!$funName.equals(lastName)) this.errorNotifier.notifyError($END, "bad_return_sentencie");
+         if (!$funName.equals($IDENT.text)) this.errorNotifier.notifyError($IDENT, "missmatch_subroutine_name");
+        }
+    | sentlist_fun[$funName, $imp]; //TODO: if lastName = funName throw error for not ending after return statement? may give problems with composite pattern
+
 /*===============Tokens:===============*/
 /***************Keywords***************/
 PROGRAM    : 'PROGRAM' ;
