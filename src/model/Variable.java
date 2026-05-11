@@ -36,15 +36,29 @@ public class Variable {
 
         if (this.isChar)
             if (this.init.isEmpty())
-                System.out.println(indent + this.type+" "+this.name+this.length+";");
+                System.out.print(indent + this.type+" "+this.name+this.length);
             else
-                System.out.println(indent + this.type+" "+this.name+this.length+" = "+this.init+";");
+                System.out.print(indent + this.type+" "+this.name+this.length+" = "+this.init);
         else
             if (this.init.isEmpty())
-                System.out.println(indent + this.type+" "+this.name+";");
+                System.out.print(indent + this.type+" "+this.name);
             else
-                System.out.println(indent + this.type+" "+this.name+" = "+this.init+";");
+                System.out.print(indent + this.type+" "+this.name+" = "+this.init);
 
+    }
+
+    public void generateInlineCode(boolean isLast) {
+        if (this.isChar)
+            if (this.init.isEmpty())
+                System.out.print(this.name+this.length);
+            else
+                System.out.print(this.name+this.length+" = "+this.init);
+        else
+        if (this.init.isEmpty())
+            System.out.print(this.name);
+        else
+            System.out.print(this.name+" = "+this.init);
+        if (!isLast) System.out.print(", ");
     }
 
 }

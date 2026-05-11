@@ -34,6 +34,14 @@ public class Subprogram {
         this.localSymbols.addVar(name, new Variable(name, type, init, len));
     }
 
+    public void declareInlineLocalVar(String type, String name, String init, String len) {
+        Symbols globalSymbols = Program.getInstance().getSymbols();
+        if (globalSymbols.symbolIsTaken(name) || localSymbols.symbolIsTaken(name)) {
+            throw new IllegalArgumentException("Symbol "+name+" is already taken");
+        }
+        this.localSymbols.addInlineVar(new Variable(name, type, init, len));
+    }
+
     public void addImplementation(ProgramBody imp) {
         this.implementation = imp;
     }
@@ -55,9 +63,8 @@ public class Subprogram {
     public void generateCode() {
         this.generateDeclarationCode();
         System.out.println(" {");
-        for (Variable var : this.localSymbols.getVars()) {
-            var.generateCode(1);
-        }
+
+        this.localSymbols.generateVariablesCode(1);
 
         if (this.implementation != null) this.implementation.generateCode(1);
 

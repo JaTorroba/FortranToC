@@ -25,6 +25,13 @@ public class Program {
         this.symbols.addVar(name, new Variable(name, type, init, len));
     }
 
+    public void declareInlineVar(String type, String name, String init, String len) {
+        if (this.symbols.symbolIsTaken(name)) {
+            throw new IllegalArgumentException("Symbol "+name+" is already taken");
+        }
+        this.symbols.addInlineVar(new Variable(name, type, init, len));
+    }
+
     public void declareCte(String name, String value) {
         if (this.symbols.symbolIsTaken(name)) {
             throw new IllegalArgumentException("Symbol "+name+" is already taken");
@@ -65,9 +72,8 @@ public class Program {
         }
 
         System.out.println("void main (void) {");
-        for (Variable v : this.symbols.getVars()) {
-            v.generateCode(1);
-        }
+
+        this.symbols.generateVariablesCode(1);
 
         this.main.generateCode(1);
 

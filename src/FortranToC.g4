@@ -46,7 +46,16 @@ numint returns [Integer val]
 simpvalue returns [String val, String t]
     : n=numint         { $val = String.valueOf($n.val); $t = "int"; }
     | r=NUM_REAL_CONST { $val = $r.text; $t = "float"; }
-    | s=STRING_CONST   { $val = $s.text; $t = "char"; }
+    | s=STRING_CONST   {
+        String str = $s.text;
+        char quote = str.charAt(0);
+        str = str.substring(1, str.length() - 1);
+        if (quote == '\'') str = str.replace("''", "'");
+        else str = str.replace("\"\"", "\"");
+        str = str.replace("\"", "\\\"");
+        $val = "\"" + str + "\"";
+        $t = "char";
+      }
     ;
 
 init returns [String val, String t]
@@ -119,13 +128,13 @@ varlist_p [Subprogram scope, String expectedType, String expectedLen]
     {if (!$ini.t.isEmpty() && !$expectedType.equals($ini.t)) this.errorNotifier.notifyError($i, "missmatched_value_type");
      if ($scope == null) {
         try {
-            this.program.declareVar($expectedType, $i.text, $ini.val, $expectedLen);
+            this.program.declareInlineVar($expectedType, $i.text, $ini.val, $expectedLen);
         } catch (IllegalArgumentException e) {
             this.errorNotifier.notifyError($i, "symbol_already_taken");
         }
      } else {
         try {
-            $scope.declareLocalVar($expectedType, $i.text, $ini.val, $expectedLen);
+            $scope.declareInlineLocalVar($expectedType, $i.text, $ini.val, $expectedLen);
         } catch (IllegalArgumentException e) {
             this.errorNotifier.notifyError($i, "symbol_already_taken");
         }

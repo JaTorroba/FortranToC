@@ -543,7 +543,16 @@ public class FortranToCParser extends Parser {
 				{
 				setState(166);
 				((SimpvalueContext)_localctx).s = match(STRING_CONST);
-				 ((SimpvalueContext)_localctx).val =  (((SimpvalueContext)_localctx).s!=null?((SimpvalueContext)_localctx).s.getText():null); ((SimpvalueContext)_localctx).t =  "char"; 
+
+				        String str = (((SimpvalueContext)_localctx).s!=null?((SimpvalueContext)_localctx).s.getText():null);
+				        char quote = str.charAt(0);
+				        str = str.substring(1, str.length() - 1);
+				        if (quote == '\'') str = str.replace("''", "'");
+				        else str = str.replace("\"\"", "\"");
+				        str = str.replace("\"", "\\\"");
+				        ((SimpvalueContext)_localctx).val =  "\"" + str + "\"";
+				        ((SimpvalueContext)_localctx).t =  "char";
+				      
 				}
 				break;
 			default:
@@ -1253,13 +1262,13 @@ public class FortranToCParser extends Parser {
 				if (!((Varlist_pContext)_localctx).ini.t.isEmpty() && !_localctx.expectedType.equals(((Varlist_pContext)_localctx).ini.t)) this.errorNotifier.notifyError(((Varlist_pContext)_localctx).i, "missmatched_value_type");
 				     if (_localctx.scope == null) {
 				        try {
-				            this.program.declareVar(_localctx.expectedType, (((Varlist_pContext)_localctx).i!=null?((Varlist_pContext)_localctx).i.getText():null), ((Varlist_pContext)_localctx).ini.val, _localctx.expectedLen);
+				            this.program.declareInlineVar(_localctx.expectedType, (((Varlist_pContext)_localctx).i!=null?((Varlist_pContext)_localctx).i.getText():null), ((Varlist_pContext)_localctx).ini.val, _localctx.expectedLen);
 				        } catch (IllegalArgumentException e) {
 				            this.errorNotifier.notifyError(((Varlist_pContext)_localctx).i, "symbol_already_taken");
 				        }
 				     } else {
 				        try {
-				            _localctx.scope.declareLocalVar(_localctx.expectedType, (((Varlist_pContext)_localctx).i!=null?((Varlist_pContext)_localctx).i.getText():null), ((Varlist_pContext)_localctx).ini.val, _localctx.expectedLen);
+				            _localctx.scope.declareInlineLocalVar(_localctx.expectedType, (((Varlist_pContext)_localctx).i!=null?((Varlist_pContext)_localctx).i.getText():null), ((Varlist_pContext)_localctx).ini.val, _localctx.expectedLen);
 				        } catch (IllegalArgumentException e) {
 				            this.errorNotifier.notifyError(((Varlist_pContext)_localctx).i, "symbol_already_taken");
 				        }

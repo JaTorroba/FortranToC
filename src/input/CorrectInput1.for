@@ -4,7 +4,7 @@ REAL, PARAMETER :: pi = 3.1415, e = 2.71828, c = 2e-6;
 
 INTEGER :: contador = 0, acumulador;
 REAL :: promedio, total = 0.0;
-CHARACTER(10) :: mensaje1 = 'Hola', mensaje2 = 'Mundo';
+CHARACTER(10) :: mensaje1 = 'Hola "mundo"', mensaje2 = '"Hola" Mundo';
 
     INTERFACE
 
@@ -37,7 +37,9 @@ FUNCTION Sumar(a, b)
     INTEGER, INTENT(IN) a;
     INTEGER, INTENT(IN) b;
 
-    INTEGER :: suma;
+    INTEGER :: suma, resta = 6, mult = 9;
+    INTEGER :: div;
+
     suma = a + b;
     Sumar = suma;
 END FUNCTION Sumar
