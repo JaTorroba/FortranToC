@@ -35,6 +35,7 @@ public class ErrorNotifier {
         this.msgMap.put("undeclared_subprogram", "There is no subroutine declared for the name: '%1$s'");
         this.msgMap.put("symbol_already_taken", "The name: '%1$s' has already been assigned to another symbol");
         this.msgMap.put("bad_return_sentencie", "The returns value for the function must be assigned with the same identifier declared for the subroutine");
+        this.msgMap.put("missing_param_declaration", "Not all parameters declared in the signature were typed in the parameter list");
     }
 
     public void notifyError(Token offToken, String msgKey) {

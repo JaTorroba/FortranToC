@@ -1884,7 +1884,16 @@ public class FortranToCParser extends Parser {
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				((Dec_s_paramlistContext)_localctx).paramlist_s =  _localctx.paramlist_h;
+
+				        Set<String> declaredNames = new HashSet<String>();
+				        for (Param p : _localctx.paramlist_h) declaredNames.add(p.getName());
+				        for (String id : _localctx.identlist_h) {
+				            if (!declaredNames.contains(id)) {
+				                this.errorNotifier.notifyError(_input.LT(1), "missing_param_declaration");
+				            }
+				        }
+				        ((Dec_s_paramlistContext)_localctx).paramlist_s =  _localctx.paramlist_h;
+				      
 				}
 				break;
 			}
@@ -2150,7 +2159,16 @@ public class FortranToCParser extends Parser {
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				((Dec_f_paramlistContext)_localctx).paramlist_s =  _localctx.paramlist_h;
+
+				        Set<String> declaredNames = new HashSet<String>();
+				        for (Param p : _localctx.paramlist_h) declaredNames.add(p.getName());
+				        for (String id : _localctx.identlist_h) {
+				            if (!declaredNames.contains(id)) {
+				                this.errorNotifier.notifyError(_input.LT(1), "missing_param_declaration");
+				            }
+				        }
+				        ((Dec_f_paramlistContext)_localctx).paramlist_s =  _localctx.paramlist_h;
+				      
 				}
 				break;
 			}

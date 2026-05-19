@@ -200,7 +200,16 @@ dec_s_paramlist [Set<String> identlist_h, Set<Param> paramlist_h] returns [Set<P
         $paramlist_h.add(new Param($i.text, $paramtype.val, $type.val));
       }
       SEMI res=dec_s_paramlist[$identlist_h, $paramlist_h] {$paramlist_s = $res.paramlist_s;}
-    | {$paramlist_s = $paramlist_h;}
+    | {
+        Set<String> declaredNames = new HashSet<String>();
+        for (Param p : $paramlist_h) declaredNames.add(p.getName());
+        for (String id : $identlist_h) {
+            if (!declaredNames.contains(id)) {
+                this.errorNotifier.notifyError(_input.LT(1), "missing_param_declaration");
+            }
+        }
+        $paramlist_s = $paramlist_h;
+      }
     ;
 
 paramtype returns [String val]
@@ -236,7 +245,16 @@ dec_f_paramlist [Set<String> identlist_h, Set<Param> paramlist_h] returns [Set<P
     SEMI res=dec_f_paramlist[$identlist_h, $paramlist_h]
     //return paramlist
     {$paramlist_s = $res.paramlist_s ; }
-    | {$paramlist_s = $paramlist_h;} ;
+    | {
+        Set<String> declaredNames = new HashSet<String>();
+        for (Param p : $paramlist_h) declaredNames.add(p.getName());
+        for (String id : $identlist_h) {
+            if (!declaredNames.contains(id)) {
+                this.errorNotifier.notifyError(_input.LT(1), "missing_param_declaration");
+            }
+        }
+        $paramlist_s = $paramlist_h;
+      } ;
 
 /*
 dec_f_paramlist : dec_f_paramlist_p ;
