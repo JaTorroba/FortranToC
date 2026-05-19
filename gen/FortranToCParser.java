@@ -3,6 +3,8 @@
     import model.*;
     import java.util.Set;
     import java.util.HashSet;
+    import java.util.List;
+    import java.util.ArrayList;
 
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -201,7 +203,7 @@ public class FortranToCParser extends Parser {
 			setState(116);
 			header();
 			setState(117);
-			((PrgContext)_localctx).sentlist = sentlist();
+			((PrgContext)_localctx).sentlist = sentlist(new HashSet<String>());
 			this.program.addMain(((PrgContext)_localctx).sentlist.block_s);
 			setState(119);
 			match(END);
@@ -402,7 +404,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class NumintContext extends ParserRuleContext {
-		public Integer val;
+		public String val;
 		public Token n;
 		public TerminalNode NUM_INT_CONST() { return getToken(FortranToCParser.NUM_INT_CONST, 0); }
 		public TerminalNode NUM_INT_CONST_B() { return getToken(FortranToCParser.NUM_INT_CONST_B, 0); }
@@ -439,7 +441,7 @@ public class FortranToCParser extends Parser {
 				{
 				setState(151);
 				((NumintContext)_localctx).n = match(NUM_INT_CONST);
-				 ((NumintContext)_localctx).val =  Integer.parseInt((((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null)); 
+				 ((NumintContext)_localctx).val =  (((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null); 
 				}
 				break;
 			case NUM_INT_CONST_B:
@@ -447,7 +449,7 @@ public class FortranToCParser extends Parser {
 				{
 				setState(153);
 				((NumintContext)_localctx).n = match(NUM_INT_CONST_B);
-				 ((NumintContext)_localctx).val =  Integer.parseInt((((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).substring(2,(((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).length()-1), 2); 
+				 ((NumintContext)_localctx).val =  "0b" + (((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).substring(2, (((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).length()-1); 
 				}
 				break;
 			case NUM_INT_CONST_H:
@@ -455,7 +457,7 @@ public class FortranToCParser extends Parser {
 				{
 				setState(155);
 				((NumintContext)_localctx).n = match(NUM_INT_CONST_H);
-				 ((NumintContext)_localctx).val =  Integer.parseInt((((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).substring(2,(((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).length()-1), 16); 
+				 ((NumintContext)_localctx).val =  "0x" + (((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).substring(2, (((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).length()-1); 
 				}
 				break;
 			case NUM_INT_CONST_O:
@@ -463,7 +465,7 @@ public class FortranToCParser extends Parser {
 				{
 				setState(157);
 				((NumintContext)_localctx).n = match(NUM_INT_CONST_O);
-				 ((NumintContext)_localctx).val =  Integer.parseInt((((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).substring(2,(((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).length()-1), 8); 
+				 ((NumintContext)_localctx).val =  "0o" + (((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).substring(2, (((NumintContext)_localctx).n!=null?((NumintContext)_localctx).n.getText():null).length()-1); 
 				}
 				break;
 			default:
@@ -527,7 +529,7 @@ public class FortranToCParser extends Parser {
 				{
 				setState(161);
 				((SimpvalueContext)_localctx).n = numint();
-				 ((SimpvalueContext)_localctx).val =  String.valueOf(((SimpvalueContext)_localctx).n.val); ((SimpvalueContext)_localctx).t =  "int"; 
+				 ((SimpvalueContext)_localctx).val =  ((SimpvalueContext)_localctx).n.val; ((SimpvalueContext)_localctx).t =  "int"; 
 				}
 				break;
 			case NUM_REAL_CONST:
@@ -1569,7 +1571,7 @@ public class FortranToCParser extends Parser {
 			setState(263);
 			((DecprocContext)_localctx).formal_paramlist = formal_paramlist();
 			setState(264);
-			((DecprocContext)_localctx).dec_s_paramlist = dec_s_paramlist(((DecprocContext)_localctx).formal_paramlist.idents, new HashSet<Param>());
+			((DecprocContext)_localctx).dec_s_paramlist = dec_s_paramlist(new HashSet<String>(((DecprocContext)_localctx).formal_paramlist.idents), new HashSet<Param>());
 			setState(265);
 			match(END);
 			setState(266);
@@ -1579,7 +1581,7 @@ public class FortranToCParser extends Parser {
 			if (!(((DecprocContext)_localctx).i1!=null?((DecprocContext)_localctx).i1.getText():null).equals((((DecprocContext)_localctx).i2!=null?((DecprocContext)_localctx).i2.getText():null))) {
 			            this.errorNotifier.notifyError(((DecprocContext)_localctx).i2, "missmatch_subroutine_name");
 			       }
-			       this.program.declareSubprogram((((DecprocContext)_localctx).i1!=null?((DecprocContext)_localctx).i1.getText():null), ((DecprocContext)_localctx).dec_s_paramlist.paramlist_s, null);
+			       this.program.declareSubprogram((((DecprocContext)_localctx).i1!=null?((DecprocContext)_localctx).i1.getText():null), ((DecprocContext)_localctx).formal_paramlist.idents, ((DecprocContext)_localctx).dec_s_paramlist.paramlist_s, null);
 			       
 			}
 		}
@@ -1596,7 +1598,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class Formal_paramlistContext extends ParserRuleContext {
-		public Set<String> idents;
+		public List<String> idents;
 		public NomparamlistContext nomparamlist;
 		public NomparamlistContext nomparamlist() {
 			return getRuleContext(NomparamlistContext.class,0);
@@ -1633,7 +1635,7 @@ public class FortranToCParser extends Parser {
 				setState(270);
 				match(T__0);
 				setState(271);
-				((Formal_paramlistContext)_localctx).nomparamlist = nomparamlist(new HashSet<String>());
+				((Formal_paramlistContext)_localctx).nomparamlist = nomparamlist(new ArrayList<String>());
 				setState(272);
 				match(T__1);
 				 ((Formal_paramlistContext)_localctx).idents =  ((Formal_paramlistContext)_localctx).nomparamlist.paramlist_s; 
@@ -1653,7 +1655,7 @@ public class FortranToCParser extends Parser {
 			case IDENT:
 				enterOuterAlt(_localctx, 2);
 				{
-				 ((Formal_paramlistContext)_localctx).idents =  new HashSet<String>(); 
+				 ((Formal_paramlistContext)_localctx).idents =  new ArrayList<String>(); 
 				}
 				break;
 			default:
@@ -1673,8 +1675,8 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class NomparamlistContext extends ParserRuleContext {
-		public Set<String> paramlist_h;
-		public Set<String> paramlist_s;
+		public List<String> paramlist_h;
+		public List<String> paramlist_s;
 		public Token IDENT;
 		public Nomparamlist_pContext nomparamlist_p;
 		public TerminalNode IDENT() { return getToken(FortranToCParser.IDENT, 0); }
@@ -1682,7 +1684,7 @@ public class FortranToCParser extends Parser {
 			return getRuleContext(Nomparamlist_pContext.class,0);
 		}
 		public NomparamlistContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
-		public NomparamlistContext(ParserRuleContext parent, int invokingState, Set<String> paramlist_h) {
+		public NomparamlistContext(ParserRuleContext parent, int invokingState, List<String> paramlist_h) {
 			super(parent, invokingState);
 			this.paramlist_h = paramlist_h;
 		}
@@ -1702,7 +1704,7 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final NomparamlistContext nomparamlist(Set<String> paramlist_h) throws RecognitionException {
+	public final NomparamlistContext nomparamlist(List<String> paramlist_h) throws RecognitionException {
 		NomparamlistContext _localctx = new NomparamlistContext(_ctx, getState(), paramlist_h);
 		enterRule(_localctx, 40, RULE_nomparamlist);
 		try {
@@ -1729,8 +1731,8 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class Nomparamlist_pContext extends ParserRuleContext {
-		public Set<String> paramlist_h;
-		public Set<String> paramlist_s;
+		public List<String> paramlist_h;
+		public List<String> paramlist_s;
 		public Token IDENT;
 		public Nomparamlist_pContext res;
 		public TerminalNode IDENT() { return getToken(FortranToCParser.IDENT, 0); }
@@ -1738,7 +1740,7 @@ public class FortranToCParser extends Parser {
 			return getRuleContext(Nomparamlist_pContext.class,0);
 		}
 		public Nomparamlist_pContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
-		public Nomparamlist_pContext(ParserRuleContext parent, int invokingState, Set<String> paramlist_h) {
+		public Nomparamlist_pContext(ParserRuleContext parent, int invokingState, List<String> paramlist_h) {
 			super(parent, invokingState);
 			this.paramlist_h = paramlist_h;
 		}
@@ -1758,7 +1760,7 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final Nomparamlist_pContext nomparamlist_p(Set<String> paramlist_h) throws RecognitionException {
+	public final Nomparamlist_pContext nomparamlist_p(List<String> paramlist_h) throws RecognitionException {
 		Nomparamlist_pContext _localctx = new Nomparamlist_pContext(_ctx, getState(), paramlist_h);
 		enterRule(_localctx, 42, RULE_nomparamlist_p);
 		try {
@@ -1870,7 +1872,6 @@ public class FortranToCParser extends Parser {
 				        if (!_localctx.identlist_h.contains((((Dec_s_paramlistContext)_localctx).i!=null?((Dec_s_paramlistContext)_localctx).i.getText():null))) {
 				            this.errorNotifier.notifyError(((Dec_s_paramlistContext)_localctx).i, "undeclared_param");
 				        }
-				        // Faltaba el paréntesis de cierre aquí
 				        _localctx.paramlist_h.add(new Param((((Dec_s_paramlistContext)_localctx).i!=null?((Dec_s_paramlistContext)_localctx).i.getText():null), ((Dec_s_paramlistContext)_localctx).paramtype.val, ((Dec_s_paramlistContext)_localctx).type.val));
 				      
 				setState(300);
@@ -2029,7 +2030,7 @@ public class FortranToCParser extends Parser {
 			setState(317);
 			match(T__0);
 			setState(318);
-			((DecfunContext)_localctx).nomparamlist = nomparamlist(new HashSet<String>());
+			((DecfunContext)_localctx).nomparamlist = nomparamlist(new ArrayList<String>());
 			setState(319);
 			match(T__1);
 			setState(320);
@@ -2041,7 +2042,7 @@ public class FortranToCParser extends Parser {
 			setState(323);
 			match(SEMI);
 			setState(324);
-			((DecfunContext)_localctx).dec_f_paramlist = dec_f_paramlist(((DecfunContext)_localctx).nomparamlist.paramlist_s, new HashSet<Param>());
+			((DecfunContext)_localctx).dec_f_paramlist = dec_f_paramlist(new HashSet<String>(((DecfunContext)_localctx).nomparamlist.paramlist_s), new HashSet<Param>());
 			setState(325);
 			match(END);
 			setState(326);
@@ -2055,7 +2056,7 @@ public class FortranToCParser extends Parser {
 			      if (!funcName.equals((((DecfunContext)_localctx).i3!=null?((DecfunContext)_localctx).i3.getText():null))) {
 			          this.errorNotifier.notifyError(((DecfunContext)_localctx).i3, "missmatch_subroutine_name");
 			      }
-			      this.program.declareSubprogram((((DecfunContext)_localctx).i1!=null?((DecfunContext)_localctx).i1.getText():null), ((DecfunContext)_localctx).dec_f_paramlist.paramlist_s, ((DecfunContext)_localctx).type.val);
+			      this.program.declareSubprogram((((DecfunContext)_localctx).i1!=null?((DecfunContext)_localctx).i1.getText():null), ((DecfunContext)_localctx).nomparamlist.paramlist_s, ((DecfunContext)_localctx).dec_f_paramlist.paramlist_s, ((DecfunContext)_localctx).type.val);
 			    
 			}
 		}
@@ -2167,6 +2168,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class SentlistContext extends ParserRuleContext {
+		public Set<String> refParams;
 		public ProgramBody block_s;
 		public SentContext sent;
 		public Sentlist_pContext sentlist_p;
@@ -2176,8 +2178,10 @@ public class FortranToCParser extends Parser {
 		public Sentlist_pContext sentlist_p() {
 			return getRuleContext(Sentlist_pContext.class,0);
 		}
-		public SentlistContext(ParserRuleContext parent, int invokingState) {
+		public SentlistContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
+		public SentlistContext(ParserRuleContext parent, int invokingState, Set<String> refParams) {
 			super(parent, invokingState);
+			this.refParams = refParams;
 		}
 		@Override public int getRuleIndex() { return RULE_sentlist; }
 		@Override
@@ -2195,18 +2199,18 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final SentlistContext sentlist() throws RecognitionException {
-		SentlistContext _localctx = new SentlistContext(_ctx, getState());
+	public final SentlistContext sentlist(Set<String> refParams) throws RecognitionException {
+		SentlistContext _localctx = new SentlistContext(_ctx, getState(), refParams);
 		enterRule(_localctx, 52, RULE_sentlist);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
 			ProgramBody block_h = new ProgramBody();
 			setState(346);
-			((SentlistContext)_localctx).sent = sent();
+			((SentlistContext)_localctx).sent = sent(_localctx.refParams);
 			block_h.addSentencie(((SentlistContext)_localctx).sent.val);
 			setState(348);
-			((SentlistContext)_localctx).sentlist_p = sentlist_p(block_h);
+			((SentlistContext)_localctx).sentlist_p = sentlist_p(_localctx.refParams, block_h);
 			((SentlistContext)_localctx).block_s =  ((SentlistContext)_localctx).sentlist_p.block_s;
 			}
 		}
@@ -2223,6 +2227,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class Sentlist_pContext extends ParserRuleContext {
+		public Set<String> refParams;
 		public ProgramBody block_h;
 		public ProgramBody block_s;
 		public SentContext sent;
@@ -2234,8 +2239,9 @@ public class FortranToCParser extends Parser {
 			return getRuleContext(Sentlist_pContext.class,0);
 		}
 		public Sentlist_pContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
-		public Sentlist_pContext(ParserRuleContext parent, int invokingState, ProgramBody block_h) {
+		public Sentlist_pContext(ParserRuleContext parent, int invokingState, Set<String> refParams, ProgramBody block_h) {
 			super(parent, invokingState);
+			this.refParams = refParams;
 			this.block_h = block_h;
 		}
 		@Override public int getRuleIndex() { return RULE_sentlist_p; }
@@ -2254,8 +2260,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final Sentlist_pContext sentlist_p(ProgramBody block_h) throws RecognitionException {
-		Sentlist_pContext _localctx = new Sentlist_pContext(_ctx, getState(), block_h);
+	public final Sentlist_pContext sentlist_p(Set<String> refParams,ProgramBody block_h) throws RecognitionException {
+		Sentlist_pContext _localctx = new Sentlist_pContext(_ctx, getState(), refParams, block_h);
 		enterRule(_localctx, 54, RULE_sentlist_p);
 		try {
 			setState(357);
@@ -2269,10 +2275,10 @@ public class FortranToCParser extends Parser {
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(351);
-				((Sentlist_pContext)_localctx).sent = sent();
+				((Sentlist_pContext)_localctx).sent = sent(_localctx.refParams);
 				_localctx.block_h.addSentencie(((Sentlist_pContext)_localctx).sent.val);
 				setState(353);
-				((Sentlist_pContext)_localctx).sentlist_p = sentlist_p(_localctx.block_h);
+				((Sentlist_pContext)_localctx).sentlist_p = sentlist_p(_localctx.refParams, _localctx.block_h);
 				((Sentlist_pContext)_localctx).block_s =  ((Sentlist_pContext)_localctx).sentlist_p.block_s;
 				}
 				break;
@@ -2304,6 +2310,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class SentContext extends ParserRuleContext {
+		public Set<String> refParams;
 		public Sentencie val;
 		public Token IDENT;
 		public ExpContext exp;
@@ -2339,8 +2346,10 @@ public class FortranToCParser extends Parser {
 			return getRuleContext(CasesContext.class,0);
 		}
 		public TerminalNode END() { return getToken(FortranToCParser.END, 0); }
-		public SentContext(ParserRuleContext parent, int invokingState) {
+		public SentContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
+		public SentContext(ParserRuleContext parent, int invokingState, Set<String> refParams) {
 			super(parent, invokingState);
+			this.refParams = refParams;
 		}
 		@Override public int getRuleIndex() { return RULE_sent; }
 		@Override
@@ -2358,8 +2367,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final SentContext sent() throws RecognitionException {
-		SentContext _localctx = new SentContext(_ctx, getState());
+	public final SentContext sent(Set<String> refParams) throws RecognitionException {
+		SentContext _localctx = new SentContext(_ctx, getState(), refParams);
 		enterRule(_localctx, 56, RULE_sent);
 		try {
 			setState(391);
@@ -2376,7 +2385,7 @@ public class FortranToCParser extends Parser {
 				((SentContext)_localctx).exp = exp();
 				setState(362);
 				match(SEMI);
-				((SentContext)_localctx).val =  new Sentencie((((SentContext)_localctx).IDENT!=null?((SentContext)_localctx).IDENT.getText():null) + " = "+((SentContext)_localctx).exp.val+";");
+				String prefix = _localctx.refParams.contains((((SentContext)_localctx).IDENT!=null?((SentContext)_localctx).IDENT.getText():null)) ? "*" : ""; ((SentContext)_localctx).val =  new Sentencie(prefix+(((SentContext)_localctx).IDENT!=null?((SentContext)_localctx).IDENT.getText():null) + " = "+((SentContext)_localctx).exp.val+";");
 				}
 				break;
 			case CALL:
@@ -2401,7 +2410,7 @@ public class FortranToCParser extends Parser {
 				setState(372);
 				match(T__1);
 				setState(373);
-				((SentContext)_localctx).if_body = if_body();
+				((SentContext)_localctx).if_body = if_body(_localctx.refParams);
 				ConditionSentencie sent = new ConditionSentencie("if ("+((SentContext)_localctx).expcond.val+") ");
 				             sent.addIfBody(((SentContext)_localctx).if_body.if_);
 				             sent.addElseBody(((SentContext)_localctx).if_body.else_);
@@ -2415,7 +2424,7 @@ public class FortranToCParser extends Parser {
 				setState(376);
 				match(DO);
 				setState(377);
-				((SentContext)_localctx).loop_body = loop_body();
+				((SentContext)_localctx).loop_body = loop_body(_localctx.refParams);
 				((SentContext)_localctx).val =  ((SentContext)_localctx).loop_body.val;
 				}
 				break;
@@ -2434,7 +2443,7 @@ public class FortranToCParser extends Parser {
 				match(T__1);
 				SelectSentencie sent = new SelectSentencie("switch ("+((SentContext)_localctx).exp.val+")");
 				setState(386);
-				cases(sent);
+				cases(_localctx.refParams, sent);
 				((SentContext)_localctx).val =  sent;
 				setState(388);
 				match(END);
@@ -2459,6 +2468,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class If_bodyContext extends ParserRuleContext {
+		public Set<String> refParams;
 		public ProgramBody if_;
 		public ProgramBody else_;
 		public SentContext sent;
@@ -2474,8 +2484,10 @@ public class FortranToCParser extends Parser {
 		public If_body_pContext if_body_p() {
 			return getRuleContext(If_body_pContext.class,0);
 		}
-		public If_bodyContext(ParserRuleContext parent, int invokingState) {
+		public If_bodyContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
+		public If_bodyContext(ParserRuleContext parent, int invokingState, Set<String> refParams) {
 			super(parent, invokingState);
+			this.refParams = refParams;
 		}
 		@Override public int getRuleIndex() { return RULE_if_body; }
 		@Override
@@ -2493,8 +2505,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final If_bodyContext if_body() throws RecognitionException {
-		If_bodyContext _localctx = new If_bodyContext(_ctx, getState());
+	public final If_bodyContext if_body(Set<String> refParams) throws RecognitionException {
+		If_bodyContext _localctx = new If_bodyContext(_ctx, getState(), refParams);
 		enterRule(_localctx, 58, RULE_if_body);
 		try {
 			setState(401);
@@ -2508,7 +2520,7 @@ public class FortranToCParser extends Parser {
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(393);
-				((If_bodyContext)_localctx).sent = sent();
+				((If_bodyContext)_localctx).sent = sent(_localctx.refParams);
 				((If_bodyContext)_localctx).if_ =  new ProgramBody(); _localctx.if_.addSentencie(((If_bodyContext)_localctx).sent.val); ((If_bodyContext)_localctx).else_ =  null;
 				}
 				break;
@@ -2518,9 +2530,9 @@ public class FortranToCParser extends Parser {
 				setState(396);
 				match(THEN);
 				setState(397);
-				((If_bodyContext)_localctx).sentlist = sentlist();
+				((If_bodyContext)_localctx).sentlist = sentlist(_localctx.refParams);
 				setState(398);
-				((If_bodyContext)_localctx).if_body_p = if_body_p();
+				((If_bodyContext)_localctx).if_body_p = if_body_p(_localctx.refParams);
 				((If_bodyContext)_localctx).if_ =  ((If_bodyContext)_localctx).sentlist.block_s;
 				     ((If_bodyContext)_localctx).else_ =  ((If_bodyContext)_localctx).if_body_p.else_;
 				}
@@ -2542,6 +2554,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class If_body_pContext extends ParserRuleContext {
+		public Set<String> refParams;
 		public ProgramBody else_;
 		public SentlistContext sentlist;
 		public TerminalNode ENDIF() { return getToken(FortranToCParser.ENDIF, 0); }
@@ -2549,8 +2562,10 @@ public class FortranToCParser extends Parser {
 		public SentlistContext sentlist() {
 			return getRuleContext(SentlistContext.class,0);
 		}
-		public If_body_pContext(ParserRuleContext parent, int invokingState) {
+		public If_body_pContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
+		public If_body_pContext(ParserRuleContext parent, int invokingState, Set<String> refParams) {
 			super(parent, invokingState);
+			this.refParams = refParams;
 		}
 		@Override public int getRuleIndex() { return RULE_if_body_p; }
 		@Override
@@ -2568,8 +2583,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final If_body_pContext if_body_p() throws RecognitionException {
-		If_body_pContext _localctx = new If_body_pContext(_ctx, getState());
+	public final If_body_pContext if_body_p(Set<String> refParams) throws RecognitionException {
+		If_body_pContext _localctx = new If_body_pContext(_ctx, getState(), refParams);
 		enterRule(_localctx, 60, RULE_if_body_p);
 		try {
 			setState(410);
@@ -2589,7 +2604,7 @@ public class FortranToCParser extends Parser {
 				setState(405);
 				match(ELSE);
 				setState(406);
-				((If_body_pContext)_localctx).sentlist = sentlist();
+				((If_body_pContext)_localctx).sentlist = sentlist(_localctx.refParams);
 				setState(407);
 				match(ENDIF);
 				((If_body_pContext)_localctx).else_ =  ((If_body_pContext)_localctx).sentlist.block_s;
@@ -2612,6 +2627,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class Loop_bodyContext extends ParserRuleContext {
+		public Set<String> refParams;
 		public LoopSentencie val;
 		public ExpcondContext expcond;
 		public SentlistContext sentlist;
@@ -2634,8 +2650,10 @@ public class FortranToCParser extends Parser {
 		public DovalContext doval(int i) {
 			return getRuleContext(DovalContext.class,i);
 		}
-		public Loop_bodyContext(ParserRuleContext parent, int invokingState) {
+		public Loop_bodyContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
+		public Loop_bodyContext(ParserRuleContext parent, int invokingState, Set<String> refParams) {
 			super(parent, invokingState);
+			this.refParams = refParams;
 		}
 		@Override public int getRuleIndex() { return RULE_loop_body; }
 		@Override
@@ -2653,8 +2671,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final Loop_bodyContext loop_body() throws RecognitionException {
-		Loop_bodyContext _localctx = new Loop_bodyContext(_ctx, getState());
+	public final Loop_bodyContext loop_body(Set<String> refParams) throws RecognitionException {
+		Loop_bodyContext _localctx = new Loop_bodyContext(_ctx, getState(), refParams);
 		enterRule(_localctx, 62, RULE_loop_body);
 		try {
 			setState(435);
@@ -2673,7 +2691,7 @@ public class FortranToCParser extends Parser {
 				match(T__1);
 				LoopSentencie sent = new LoopSentencie("while ( "+((Loop_bodyContext)_localctx).expcond.val+" ) ");
 				setState(417);
-				((Loop_bodyContext)_localctx).sentlist = sentlist();
+				((Loop_bodyContext)_localctx).sentlist = sentlist(_localctx.refParams);
 				sent.addBody(((Loop_bodyContext)_localctx).sentlist.block_s);
 				setState(419);
 				match(ENDDO);
@@ -2700,7 +2718,7 @@ public class FortranToCParser extends Parser {
 				String content = "for("+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"="+((Loop_bodyContext)_localctx).d1.val+ " ; "+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"!="+((Loop_bodyContext)_localctx).d2.val+" ; "+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"="+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"+"+((Loop_bodyContext)_localctx).d3.val;
 				     LoopSentencie sent = new LoopSentencie(content);
 				setState(430);
-				((Loop_bodyContext)_localctx).sentlist = sentlist();
+				((Loop_bodyContext)_localctx).sentlist = sentlist(_localctx.refParams);
 				sent.addBody(((Loop_bodyContext)_localctx).sentlist.block_s);
 				setState(432);
 				match(ENDDO);
@@ -2788,6 +2806,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class CasesContext extends ParserRuleContext {
+		public Set<String> refParams;
 		public SelectSentencie select;
 		public Token error;
 		public TerminalNode CASE() { return getToken(FortranToCParser.CASE, 0); }
@@ -2799,8 +2818,9 @@ public class FortranToCParser extends Parser {
 		}
 		public TerminalNode DEFAULT() { return getToken(FortranToCParser.DEFAULT, 0); }
 		public CasesContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
-		public CasesContext(ParserRuleContext parent, int invokingState, SelectSentencie select) {
+		public CasesContext(ParserRuleContext parent, int invokingState, Set<String> refParams, SelectSentencie select) {
 			super(parent, invokingState);
+			this.refParams = refParams;
 			this.select = select;
 		}
 		@Override public int getRuleIndex() { return RULE_cases; }
@@ -2819,8 +2839,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final CasesContext cases(SelectSentencie select) throws RecognitionException {
-		CasesContext _localctx = new CasesContext(_ctx, getState(), select);
+	public final CasesContext cases(Set<String> refParams,SelectSentencie select) throws RecognitionException {
+		CasesContext _localctx = new CasesContext(_ctx, getState(), refParams, select);
 		enterRule(_localctx, 66, RULE_cases);
 		try {
 			setState(450);
@@ -2832,7 +2852,7 @@ public class FortranToCParser extends Parser {
 				setState(443);
 				match(CASE);
 				setState(444);
-				cases_p(_localctx.select);
+				cases_p(_localctx.refParams, _localctx.select);
 				}
 				break;
 			case END:
@@ -2846,7 +2866,7 @@ public class FortranToCParser extends Parser {
 				setState(446);
 				((CasesContext)_localctx).error = match(DEFAULT);
 				setState(447);
-				sentlist();
+				sentlist(_localctx.refParams);
 				this.errorNotifier.notifyError(((CasesContext)_localctx).error, "miss_case_default");
 				}
 				break;
@@ -2867,6 +2887,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class Cases_pContext extends ParserRuleContext {
+		public Set<String> refParams;
 		public SelectSentencie select;
 		public TagsContext tags;
 		public SentlistContext sentlist;
@@ -2882,8 +2903,9 @@ public class FortranToCParser extends Parser {
 		}
 		public TerminalNode DEFAULT() { return getToken(FortranToCParser.DEFAULT, 0); }
 		public Cases_pContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
-		public Cases_pContext(ParserRuleContext parent, int invokingState, SelectSentencie select) {
+		public Cases_pContext(ParserRuleContext parent, int invokingState, Set<String> refParams, SelectSentencie select) {
 			super(parent, invokingState);
+			this.refParams = refParams;
 			this.select = select;
 		}
 		@Override public int getRuleIndex() { return RULE_cases_p; }
@@ -2902,8 +2924,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final Cases_pContext cases_p(SelectSentencie select) throws RecognitionException {
-		Cases_pContext _localctx = new Cases_pContext(_ctx, getState(), select);
+	public final Cases_pContext cases_p(Set<String> refParams,SelectSentencie select) throws RecognitionException {
+		Cases_pContext _localctx = new Cases_pContext(_ctx, getState(), refParams, select);
 		enterRule(_localctx, 68, RULE_cases_p);
 		try {
 			setState(469);
@@ -2921,11 +2943,11 @@ public class FortranToCParser extends Parser {
 				CaseSentencie caseSent = new CaseSentencie("case "+((Cases_pContext)_localctx).tags.val+":");
 				         caseSent.setValue(((Cases_pContext)_localctx).tags.val);
 				setState(456);
-				((Cases_pContext)_localctx).sentlist = sentlist();
+				((Cases_pContext)_localctx).sentlist = sentlist(_localctx.refParams);
 				caseSent.addBody(((Cases_pContext)_localctx).sentlist.block_s);
 				         _localctx.select.addCaseClause(caseSent);
 				setState(458);
-				cases(_localctx.select);
+				cases(_localctx.refParams, _localctx.select);
 				}
 				break;
 			case DEFAULT:
@@ -2934,7 +2956,7 @@ public class FortranToCParser extends Parser {
 				setState(460);
 				match(DEFAULT);
 				setState(461);
-				((Cases_pContext)_localctx).sentlist = sentlist();
+				((Cases_pContext)_localctx).sentlist = sentlist(_localctx.refParams);
 				CaseSentencie def = new CaseSentencie("default:");
 				         def.addBody(((Cases_pContext)_localctx).sentlist.block_s);
 				         _localctx.select.addDefaultClause(def);
@@ -2952,9 +2974,9 @@ public class FortranToCParser extends Parser {
 				setState(464);
 				((Cases_pContext)_localctx).error = tags(_localctx.select);
 				setState(465);
-				sentlist();
+				sentlist(_localctx.refParams);
 				setState(466);
-				cases(_localctx.select);
+				cases(_localctx.refParams, _localctx.select);
 				this.errorNotifier.notifyError((((Cases_pContext)_localctx).error!=null?(((Cases_pContext)_localctx).error.start):null), "miss_cond_par");
 				}
 				break;
@@ -3587,7 +3609,13 @@ public class FortranToCParser extends Parser {
 				((FactorContext)_localctx).IDENT = match(IDENT);
 				setState(538);
 				((FactorContext)_localctx).subpparamlist = subpparamlist();
-				((FactorContext)_localctx).val =  (((FactorContext)_localctx).IDENT!=null?((FactorContext)_localctx).IDENT.getText():null)+((FactorContext)_localctx).subpparamlist.val;
+
+				        if (((FactorContext)_localctx).subpparamlist.args.isEmpty()) {
+				            ((FactorContext)_localctx).val =  (((FactorContext)_localctx).IDENT!=null?((FactorContext)_localctx).IDENT.getText():null);
+				        } else {
+				            ((FactorContext)_localctx).val =  (((FactorContext)_localctx).IDENT!=null?((FactorContext)_localctx).IDENT.getText():null) + "(" + String.join(", ", ((FactorContext)_localctx).subpparamlist.args) + ")";
+				        }
+				    
 				}
 				break;
 			default:
@@ -3646,7 +3674,31 @@ public class FortranToCParser extends Parser {
 			((Proc_callContext)_localctx).IDENT = match(IDENT);
 			setState(545);
 			((Proc_callContext)_localctx).subpparamlist = subpparamlist();
-			((Proc_callContext)_localctx).val =  (((Proc_callContext)_localctx).IDENT!=null?((Proc_callContext)_localctx).IDENT.getText():null)+((Proc_callContext)_localctx).subpparamlist.val;
+
+			        Subprogram sub = this.program.getSubprogram((((Proc_callContext)_localctx).IDENT!=null?((Proc_callContext)_localctx).IDENT.getText():null));
+			        if (sub != null && !sub.isFunction()) {
+			            StringBuilder sb = new StringBuilder();
+			            if (!((Proc_callContext)_localctx).subpparamlist.args.isEmpty()) {
+			                sb.append("(");
+			                List<String> args = ((Proc_callContext)_localctx).subpparamlist.args;
+			                for (int i = 0; i < args.size(); i++) {
+			                    if (sub.isRefParam(i)) {
+			                        sb.append("&");
+			                    }
+			                    sb.append(args.get(i));
+			                    if (i < args.size() - 1) sb.append(", ");
+			                }
+			                sb.append(")");
+			            }
+			            ((Proc_callContext)_localctx).val =  (((Proc_callContext)_localctx).IDENT!=null?((Proc_callContext)_localctx).IDENT.getText():null) + sb.toString();
+			        } else {
+			            if (((Proc_callContext)_localctx).subpparamlist.args.isEmpty()) {
+			                ((Proc_callContext)_localctx).val =  (((Proc_callContext)_localctx).IDENT!=null?((Proc_callContext)_localctx).IDENT.getText():null);
+			            } else {
+			                ((Proc_callContext)_localctx).val =  (((Proc_callContext)_localctx).IDENT!=null?((Proc_callContext)_localctx).IDENT.getText():null) + "(" + String.join(", ", ((Proc_callContext)_localctx).subpparamlist.args) + ")";
+			            }
+			        }
+			    
 			}
 		}
 		catch (RecognitionException re) {
@@ -3662,7 +3714,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class SubpparamlistContext extends ParserRuleContext {
-		public String val;
+		public List<String> args;
 		public ExpContext exp;
 		public ExplistContext explist;
 		public ExpContext exp() {
@@ -3708,7 +3760,7 @@ public class FortranToCParser extends Parser {
 				((SubpparamlistContext)_localctx).explist = explist();
 				setState(551);
 				match(T__1);
-				((SubpparamlistContext)_localctx).val =  "(" + ((SubpparamlistContext)_localctx).exp.val + ((SubpparamlistContext)_localctx).explist.val + ")";
+				 ((SubpparamlistContext)_localctx).args =  new ArrayList<String>(); _localctx.args.add(((SubpparamlistContext)_localctx).exp.val); _localctx.args.addAll(((SubpparamlistContext)_localctx).explist.args); 
 				}
 				break;
 			case T__1:
@@ -3730,7 +3782,7 @@ public class FortranToCParser extends Parser {
 			case NEQV:
 				enterOuterAlt(_localctx, 2);
 				{
-				((SubpparamlistContext)_localctx).val =  "";
+				 ((SubpparamlistContext)_localctx).args =  new ArrayList<String>(); 
 				}
 				break;
 			default:
@@ -3750,7 +3802,7 @@ public class FortranToCParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class ExplistContext extends ParserRuleContext {
-		public String val;
+		public List<String> args;
 		public ExpContext exp;
 		public ExplistContext res;
 		public ExpContext exp() {
@@ -3794,13 +3846,13 @@ public class FortranToCParser extends Parser {
 				((ExplistContext)_localctx).exp = exp();
 				setState(559);
 				((ExplistContext)_localctx).res = explist();
-				((ExplistContext)_localctx).val =  ", "+((ExplistContext)_localctx).exp.val+((ExplistContext)_localctx).res.val;
+				 ((ExplistContext)_localctx).args =  new ArrayList<String>(); _localctx.args.add(((ExplistContext)_localctx).exp.val); _localctx.args.addAll(((ExplistContext)_localctx).res.args); 
 				}
 				break;
 			case T__1:
 				enterOuterAlt(_localctx, 2);
 				{
-				((ExplistContext)_localctx).val =  "";
+				 ((ExplistContext)_localctx).args =  new ArrayList<String>(); 
 				}
 				break;
 			default:
@@ -4378,19 +4430,21 @@ public class FortranToCParser extends Parser {
 			setState(635);
 			((CodprocContext)_localctx).listP = formal_paramlist();
 			setState(636);
-			((CodprocContext)_localctx).sParams = dec_s_paramlist(((CodprocContext)_localctx).listP.idents, new HashSet<Param>());
+			((CodprocContext)_localctx).sParams = dec_s_paramlist(new HashSet<String>(((CodprocContext)_localctx).listP.idents), new HashSet<Param>());
 
 			          Subprogram scope = null;
+			          Set<String> refParams = new HashSet<String>();
 			          if (!this.program.hasSubprogram((((CodprocContext)_localctx).i1!=null?((CodprocContext)_localctx).i1.getText():null))) {
 			              this.errorNotifier.notifyError(((CodprocContext)_localctx).i1, "undeclared_subprogram");
 			          } else {
 			              scope = this.program.getSubprogram((((CodprocContext)_localctx).i1!=null?((CodprocContext)_localctx).i1.getText():null));
+			              refParams = scope.getRefParamNames();
 			          }
 			      
 			setState(638);
 			dcllist(scope);
 			setState(639);
-			((CodprocContext)_localctx).sentlist = sentlist();
+			((CodprocContext)_localctx).sentlist = sentlist(refParams);
 			setState(640);
 			match(END);
 			setState(641);
@@ -4484,7 +4538,7 @@ public class FortranToCParser extends Parser {
 			setState(647);
 			match(T__0);
 			setState(648);
-			((CodfunContext)_localctx).nParams = nomparamlist(new HashSet<String>());
+			((CodfunContext)_localctx).nParams = nomparamlist(new ArrayList<String>());
 			setState(649);
 			match(T__1);
 			setState(650);
@@ -4496,7 +4550,7 @@ public class FortranToCParser extends Parser {
 			setState(653);
 			match(SEMI);
 			setState(654);
-			((CodfunContext)_localctx).fParams = dec_f_paramlist(((CodfunContext)_localctx).nParams.paramlist_s, new HashSet<Param>());
+			((CodfunContext)_localctx).fParams = dec_f_paramlist(new HashSet<String>(((CodfunContext)_localctx).nParams.paramlist_s), new HashSet<Param>());
 
 			          Subprogram scope = null;
 			          if (!this.program.hasSubprogram((((CodfunContext)_localctx).i1!=null?((CodfunContext)_localctx).i1.getText():null))) {
@@ -4509,7 +4563,7 @@ public class FortranToCParser extends Parser {
 			dcllist(scope);
 			   ProgramBody imp = new ProgramBody();
 			setState(658);
-			sentlist_fun((((CodfunContext)_localctx).i1!=null?((CodfunContext)_localctx).i1.getText():null), imp);
+			sentlist_fun((((CodfunContext)_localctx).i1!=null?((CodfunContext)_localctx).i1.getText():null), new HashSet<String>(), imp);
 
 			          if (!this.program.hasSubprogram((((CodfunContext)_localctx).i1!=null?((CodfunContext)_localctx).i1.getText():null))) {
 			              this.errorNotifier.notifyError(((CodfunContext)_localctx).i1, "undeclared_subprogram");
@@ -4545,6 +4599,7 @@ public class FortranToCParser extends Parser {
 	@SuppressWarnings("CheckReturnValue")
 	public static class Sentlist_funContext extends ParserRuleContext {
 		public String funName;
+		public Set<String> refParams;
 		public ProgramBody imp;
 		public Token IDENT;
 		public ExpContext exp;
@@ -4587,9 +4642,10 @@ public class FortranToCParser extends Parser {
 		}
 		public TerminalNode END() { return getToken(FortranToCParser.END, 0); }
 		public Sentlist_funContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
-		public Sentlist_funContext(ParserRuleContext parent, int invokingState, String funName, ProgramBody imp) {
+		public Sentlist_funContext(ParserRuleContext parent, int invokingState, String funName, Set<String> refParams, ProgramBody imp) {
 			super(parent, invokingState);
 			this.funName = funName;
+			this.refParams = refParams;
 			this.imp = imp;
 		}
 		@Override public int getRuleIndex() { return RULE_sentlist_fun; }
@@ -4608,8 +4664,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final Sentlist_funContext sentlist_fun(String funName,ProgramBody imp) throws RecognitionException {
-		Sentlist_funContext _localctx = new Sentlist_funContext(_ctx, getState(), funName, imp);
+	public final Sentlist_funContext sentlist_fun(String funName,Set<String> refParams,ProgramBody imp) throws RecognitionException {
+		Sentlist_funContext _localctx = new Sentlist_funContext(_ctx, getState(), funName, refParams, imp);
 		enterRule(_localctx, 108, RULE_sentlist_fun);
 		try {
 			setState(698);
@@ -4628,10 +4684,12 @@ public class FortranToCParser extends Parser {
 				match(SEMI);
 				if (_localctx.funName.equals((((Sentlist_funContext)_localctx).IDENT!=null?((Sentlist_funContext)_localctx).IDENT.getText():null)))
 				            _localctx.imp.addSentencie(new Sentencie("return "+((Sentlist_funContext)_localctx).exp.val+";"));
-				         else
-				            _localctx.imp.addSentencie(new Sentencie((((Sentlist_funContext)_localctx).IDENT!=null?((Sentlist_funContext)_localctx).IDENT.getText():null)+" = "+((Sentlist_funContext)_localctx).exp.val+";"));
+				         else {
+				            String prefix = _localctx.refParams.contains((((Sentlist_funContext)_localctx).IDENT!=null?((Sentlist_funContext)_localctx).IDENT.getText():null)) ? "*" : "";
+				            _localctx.imp.addSentencie(new Sentencie(prefix+(((Sentlist_funContext)_localctx).IDENT!=null?((Sentlist_funContext)_localctx).IDENT.getText():null)+" = "+((Sentlist_funContext)_localctx).exp.val+";"));
+				         }
 				setState(666);
-				sentlist_fun_p(_localctx.funName, (((Sentlist_funContext)_localctx).IDENT!=null?((Sentlist_funContext)_localctx).IDENT.getText():null), _localctx.imp);
+				sentlist_fun_p(_localctx.funName, _localctx.refParams, (((Sentlist_funContext)_localctx).IDENT!=null?((Sentlist_funContext)_localctx).IDENT.getText():null), _localctx.imp);
 				}
 				break;
 			case CALL:
@@ -4643,7 +4701,7 @@ public class FortranToCParser extends Parser {
 				match(SEMI);
 				_localctx.imp.addSentencie(new Sentencie(((Sentlist_funContext)_localctx).proc_call.val));
 				setState(671);
-				sentlist_fun(_localctx.funName, _localctx.imp);
+				sentlist_fun(_localctx.funName, _localctx.refParams, _localctx.imp);
 				}
 				break;
 			case IF:
@@ -4658,14 +4716,14 @@ public class FortranToCParser extends Parser {
 				setState(676);
 				match(T__1);
 				setState(677);
-				((Sentlist_funContext)_localctx).if_body = if_body();
+				((Sentlist_funContext)_localctx).if_body = if_body(_localctx.refParams);
 				ConditionSentencie sent = new ConditionSentencie("if ("+((Sentlist_funContext)_localctx).expcond.val+") ");
 				         sent.addIfBody(((Sentlist_funContext)_localctx).if_body.if_);
 				         sent.addElseBody(((Sentlist_funContext)_localctx).if_body.else_);
 				         _localctx.imp.addSentencie(sent);
 				        
 				setState(679);
-				sentlist_fun(_localctx.funName, _localctx.imp);
+				sentlist_fun(_localctx.funName, _localctx.refParams, _localctx.imp);
 				}
 				break;
 			case DO:
@@ -4674,10 +4732,10 @@ public class FortranToCParser extends Parser {
 				setState(681);
 				match(DO);
 				setState(682);
-				((Sentlist_funContext)_localctx).loop_body = loop_body();
+				((Sentlist_funContext)_localctx).loop_body = loop_body(_localctx.refParams);
 				_localctx.imp.addSentencie(((Sentlist_funContext)_localctx).loop_body.val);
 				setState(684);
-				sentlist_fun(_localctx.funName, _localctx.imp);
+				sentlist_fun(_localctx.funName, _localctx.refParams, _localctx.imp);
 				}
 				break;
 			case SELECT:
@@ -4695,14 +4753,14 @@ public class FortranToCParser extends Parser {
 				match(T__1);
 				SelectSentencie sent = new SelectSentencie("switch ("+((Sentlist_funContext)_localctx).exp.val+")");
 				setState(692);
-				cases(sent);
+				cases(_localctx.refParams, sent);
 				_localctx.imp.addSentencie(sent);
 				setState(694);
 				match(END);
 				setState(695);
 				match(SELECT);
 				setState(696);
-				sentlist_fun(_localctx.funName, _localctx.imp);
+				sentlist_fun(_localctx.funName, _localctx.refParams, _localctx.imp);
 				}
 				break;
 			default:
@@ -4723,6 +4781,7 @@ public class FortranToCParser extends Parser {
 	@SuppressWarnings("CheckReturnValue")
 	public static class Sentlist_fun_pContext extends ParserRuleContext {
 		public String funName;
+		public Set<String> refParams;
 		public String lastName;
 		public ProgramBody imp;
 		public Token END;
@@ -4734,9 +4793,10 @@ public class FortranToCParser extends Parser {
 			return getRuleContext(Sentlist_funContext.class,0);
 		}
 		public Sentlist_fun_pContext(ParserRuleContext parent, int invokingState) { super(parent, invokingState); }
-		public Sentlist_fun_pContext(ParserRuleContext parent, int invokingState, String funName, String lastName, ProgramBody imp) {
+		public Sentlist_fun_pContext(ParserRuleContext parent, int invokingState, String funName, Set<String> refParams, String lastName, ProgramBody imp) {
 			super(parent, invokingState);
 			this.funName = funName;
+			this.refParams = refParams;
 			this.lastName = lastName;
 			this.imp = imp;
 		}
@@ -4756,8 +4816,8 @@ public class FortranToCParser extends Parser {
 		}
 	}
 
-	public final Sentlist_fun_pContext sentlist_fun_p(String funName,String lastName,ProgramBody imp) throws RecognitionException {
-		Sentlist_fun_pContext _localctx = new Sentlist_fun_pContext(_ctx, getState(), funName, lastName, imp);
+	public final Sentlist_fun_pContext sentlist_fun_p(String funName,Set<String> refParams,String lastName,ProgramBody imp) throws RecognitionException {
+		Sentlist_fun_pContext _localctx = new Sentlist_fun_pContext(_ctx, getState(), funName, refParams, lastName, imp);
 		enterRule(_localctx, 110, RULE_sentlist_fun_p);
 		try {
 			setState(705);
@@ -4785,7 +4845,7 @@ public class FortranToCParser extends Parser {
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(704);
-				sentlist_fun(_localctx.funName, _localctx.imp);
+				sentlist_fun(_localctx.funName, _localctx.refParams, _localctx.imp);
 				}
 				break;
 			default:

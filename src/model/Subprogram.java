@@ -9,15 +9,21 @@ public class Subprogram {
     private final String returnType;
     private final Symbols localSymbols;
     private ProgramBody implementation;
+    private final List<String> paramOrder;
 
-    public Subprogram(String name, String returnType, Set<Param> params) {
+    public Subprogram(String name, String returnType, Set<Param> params, List<String> paramOrder) {
         this.name = name;
         this.isFunction = returnType != null;
         this.returnType = returnType;
+        this.paramOrder = paramOrder;
         this.params = new HashMap<>();
         this.localSymbols = new Symbols();
         for (Param p : params)
             this.params.put(p.getName(), p);
+    }
+
+    public boolean isFunction() {
+        return this.isFunction;
     }
 
     public Set<Param> getParams() {
@@ -46,18 +52,43 @@ public class Subprogram {
         this.implementation = imp;
     }
 
+    public boolean isRefParam(String name) {
+        Param p = this.params.get(name);
+        if (p == null) return false;
+        return p.getParamType().equals("OUT") || p.getParamType().equals("INOUT");
+    }
+
+    public boolean isRefParam(int index) {
+        if (this.paramOrder == null || index < 0 || index >= this.paramOrder.size()) return false;
+        return isRefParam(this.paramOrder.get(index));
+    }
+
+    public Set<String> getRefParamNames() {
+        Set<String> refNames = new HashSet<>();
+        for (Param p : this.params.values()) {
+            if (p.getParamType().equals("OUT") || p.getParamType().equals("INOUT")) {
+                refNames.add(p.getName());
+            }
+        }
+        return refNames;
+    }
+
     public void generateDeclarationCode() {
         if (this.isFunction)
-            System.out.print(returnType+" "+this.name+" (");
+            System.out.print(returnType+" "+this.name+" ( ");
         else
-            System.out.print("void "+this.name+" (");
-        Iterator<Param> ite = this.params.values().iterator();
-        while (ite.hasNext()) {
-            Param p = ite.next();
-            System.out.print(p.getType() + " " + p.getName());
-            if (ite.hasNext()) System.out.print(", ");
+            System.out.print("void "+this.name+" ( ");
+        
+        for (int i = 0; i < paramOrder.size(); i++) {
+            String pName = paramOrder.get(i);
+            Param p = this.params.get(pName);
+            if (p != null) {
+                String pointer = (p.getParamType().equals("OUT") || p.getParamType().equals("INOUT")) ? "*" : "";
+                System.out.print(p.getType() + " " + pointer + p.getName());
+                if (i < paramOrder.size() - 1) System.out.print(", ");
+            }
         }
-        System.out.print(")");
+        System.out.print(" );");
     }
 
     public void generateCode() {

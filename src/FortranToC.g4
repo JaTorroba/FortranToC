@@ -4,6 +4,8 @@ grammar FortranToC;
     import model.*;
     import java.util.Set;
     import java.util.HashSet;
+    import java.util.List;
+    import java.util.ArrayList;
 }
 
 @parser::members {
@@ -14,7 +16,7 @@ grammar FortranToC;
 prg : PROGRAM IDENT SEMI
       dcllist[null]
       header
-      sentlist
+      sentlist[new HashSet<String>()]
       {this.program.addMain($sentlist.block_s);}
       END PROGRAM IDENT
       subproglist {if (this.getNumberOfSyntaxErrors() == 0) this.program.generateCode();};
@@ -35,16 +37,15 @@ type returns [String val, String length]
 charlength returns [String length]
             : '(' n=numint ')' {$length = "["+$n.val+"]";}
             | {$length = "";};
-numint returns [Integer val]
-    : n=NUM_INT_CONST   { $val = Integer.parseInt($n.text); }
-    //TODO: implementar conversion de diferentes formatos segun la practica
-    | n=NUM_INT_CONST_B { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 2); }
-    | n=NUM_INT_CONST_H { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 16); }
-    | n=NUM_INT_CONST_O { $val = Integer.parseInt($n.text.substring(2,$n.text.length()-1), 8); }
+numint returns [String val]
+    : n=NUM_INT_CONST   { $val = $n.text; }
+    | n=NUM_INT_CONST_B { $val = "0b" + $n.text.substring(2, $n.text.length()-1); }
+    | n=NUM_INT_CONST_H { $val = "0x" + $n.text.substring(2, $n.text.length()-1); }
+    | n=NUM_INT_CONST_O { $val = "0o" + $n.text.substring(2, $n.text.length()-1); }
     ;
 
 simpvalue returns [String val, String t]
-    : n=numint         { $val = String.valueOf($n.val); $t = "int"; }
+    : n=numint         { $val = $n.val; $t = "int"; }
     | r=NUM_REAL_CONST { $val = $r.text; $t = "float"; }
     | s=STRING_CONST   {
         String str = $s.text;
@@ -164,26 +165,26 @@ decsubprog  : decproc decsubprog | decfun decsubprog | ;
 decproc
     : SUBROUTINE i1=IDENT
       formal_paramlist
-      dec_s_paramlist[$formal_paramlist.idents, new HashSet<Param>()]
+      dec_s_paramlist[new HashSet<String>($formal_paramlist.idents), new HashSet<Param>()]
       END SUBROUTINE i2=IDENT
       {if (!$i1.text.equals($i2.text)) {
             this.errorNotifier.notifyError($i2, "missmatch_subroutine_name");
        }
-       this.program.declareSubprogram($i1.text, $dec_s_paramlist.paramlist_s, null);
+       this.program.declareSubprogram($i1.text, $formal_paramlist.idents, $dec_s_paramlist.paramlist_s, null);
        }
     ;
 
 
 //returns a list with de Strings of the declared params IDENT for later comprobation
-formal_paramlist returns [Set<String> idents]
-    : '(' nomparamlist[new HashSet<String>()] ')' { $idents = $nomparamlist.paramlist_s; }
-    | { $idents = new HashSet<String>(); }
+formal_paramlist returns [List<String> idents]
+    : '(' nomparamlist[new ArrayList<String>()] ')' { $idents = $nomparamlist.paramlist_s; }
+    | { $idents = new ArrayList<String>(); }
     ;
-nomparamlist [Set<String> paramlist_h] returns [Set<String> paramlist_s]
+nomparamlist [List<String> paramlist_h] returns [List<String> paramlist_s]
     : IDENT {$paramlist_h.add($IDENT.text);}
       nomparamlist_p[$paramlist_h] {$paramlist_s = $nomparamlist_p.paramlist_s;} ;
 
-nomparamlist_p [Set<String> paramlist_h] returns [Set<String> paramlist_s]
+nomparamlist_p [List<String> paramlist_h] returns [List<String> paramlist_s]
     : ',' IDENT {$paramlist_h.add($IDENT.text);} //TODO: añadir comprobacion de si ya hay otra por ese nombre
       res=nomparamlist_p[$paramlist_h] {$paramlist_s = $res.paramlist_s;}
     | {$paramlist_s = $paramlist_h;}
@@ -196,7 +197,6 @@ dec_s_paramlist [Set<String> identlist_h, Set<Param> paramlist_h] returns [Set<P
         if (!$identlist_h.contains($i.text)) {
             this.errorNotifier.notifyError($i, "undeclared_param");
         }
-        // Faltaba el paréntesis de cierre aquí
         $paramlist_h.add(new Param($i.text, $paramtype.val, $type.val));
       }
       SEMI res=dec_s_paramlist[$identlist_h, $paramlist_h] {$paramlist_s = $res.paramlist_s;}
@@ -211,9 +211,9 @@ paramtype returns [String val]
 /*Function*/
 decfun
     : FUNCTION i1=IDENT
-    '(' nomparamlist[new HashSet<String>()] ')'
+    '(' nomparamlist[new ArrayList<String>()] ')'
     type '::' i2=IDENT SEMI
-    dec_f_paramlist[$nomparamlist.paramlist_s, new HashSet<Param>()]
+    dec_f_paramlist[new HashSet<String>($nomparamlist.paramlist_s), new HashSet<Param>()]
     END FUNCTION i3=IDENT
     { String funcName = $i1.text;
       if (!funcName.equals($i2.text)) {
@@ -222,7 +222,7 @@ decfun
       if (!funcName.equals($i3.text)) {
           this.errorNotifier.notifyError($i3, "missmatch_subroutine_name");
       }
-      this.program.declareSubprogram($i1.text, $dec_f_paramlist.paramlist_s, $type.val);
+      this.program.declareSubprogram($i1.text, $nomparamlist.paramlist_s, $dec_f_paramlist.paramlist_s, $type.val);
     }
     ;
 
@@ -247,63 +247,63 @@ dec_f_paramlist_p   : type ',' INTENT '(' IN ')' IDENT SEMI dec_f_paramlist_p | 
 
 /*Sentencies*/
 //sentlist  : sent | sentlist sent // not LL
-sentlist returns [ProgramBody block_s]
+sentlist[Set<String> refParams] returns [ProgramBody block_s]
     :
     {ProgramBody block_h = new ProgramBody();}
-    sent
+    sent[$refParams]
     {block_h.addSentencie($sent.val);}
-    sentlist_p[block_h]
+    sentlist_p[$refParams, block_h]
     {$block_s = $sentlist_p.block_s;} ;
 
-sentlist_p  [ProgramBody block_h] returns [ProgramBody block_s]
+sentlist_p  [Set<String> refParams, ProgramBody block_h] returns [ProgramBody block_s]
     :
-    sent
+    sent[$refParams]
         {$block_h.addSentencie($sent.val);}
-    sentlist_p[$block_h]
+    sentlist_p[$refParams, $block_h]
         {$block_s = $sentlist_p.block_s;}
     |   {$block_s = $block_h;};
 
-sent returns [Sentencie val]
-        : IDENT '=' exp SEMI  {$val = new Sentencie($IDENT.text + " = "+$exp.val+";");}
+sent[Set<String> refParams] returns [Sentencie val]
+        : IDENT '=' exp SEMI  {String prefix = $refParams.contains($IDENT.text) ? "*" : ""; $val = new Sentencie(prefix+$IDENT.text + " = "+$exp.val+";");}
         | proc_call SEMI    {$val = new Sentencie($proc_call.val);}
         |
-        IF '(' expcond ')' if_body
+        IF '(' expcond ')' if_body[$refParams]
             {ConditionSentencie sent = new ConditionSentencie("if ("+$expcond.val+") ");
              sent.addIfBody($if_body.if);
              sent.addElseBody($if_body.else);
              $val = sent;
             }
         |
-        DO loop_body
+        DO loop_body[$refParams]
             {$val = $loop_body.val;}
         |
         SELECT CASE '(' exp ')'
             {SelectSentencie sent = new SelectSentencie("switch ("+$exp.val+")");}
-        cases[sent]
+        cases[$refParams, sent]
             {$val = sent;}
         END SELECT;
 
 
-if_body returns [ProgramBody if, ProgramBody else]
+if_body[Set<String> refParams] returns [ProgramBody if, ProgramBody else]
     :
-    sent {$if = new ProgramBody(); $if.addSentencie($sent.val); $else = null;}
+    sent[$refParams] {$if = new ProgramBody(); $if.addSentencie($sent.val); $else = null;}
     |
     THEN
-    sentlist
-    if_body_p
+    sentlist[$refParams]
+    if_body_p[$refParams]
     {$if = $sentlist.block_s;
      $else = $if_body_p.else;}
     ;
 
-if_body_p  returns [ProgramBody else]
+if_body_p[Set<String> refParams]  returns [ProgramBody else]
     : ENDIF               {$else = null;}
-    | ELSE sentlist ENDIF {$else = $sentlist.block_s;};
+    | ELSE sentlist[$refParams] ENDIF {$else = $sentlist.block_s;};
 
-loop_body returns[LoopSentencie val]
+loop_body[Set<String> refParams] returns[LoopSentencie val]
     :
     WHILE '(' expcond ')'
     {LoopSentencie sent = new LoopSentencie("while ( "+$expcond.val+" ) ");}
-    sentlist
+    sentlist[$refParams]
     {sent.addBody($sentlist.block_s);}
     ENDDO
     {$val = sent;}
@@ -311,7 +311,7 @@ loop_body returns[LoopSentencie val]
     IDENT '=' d1=doval ',' d2=doval ',' d3=doval
     {String content = "for("+$IDENT.text+"="+$d1.val+ " ; "+$IDENT.text+"!="+$d2.val+" ; "+$IDENT.text+"="+$IDENT.text+"+"+$d3.val;
      LoopSentencie sent = new LoopSentencie(content);}
-    sentlist
+    sentlist[$refParams]
     {sent.addBody($sentlist.block_s);}
     ENDDO
     {$val = sent;}
@@ -323,27 +323,27 @@ doval returns[String val]
     | IDENT          {$val = $IDENT.text;}
     ;
 
-cases[SelectSentencie select]
-    : CASE cases_p[$select]
+cases[Set<String> refParams, SelectSentencie select]
+    : CASE cases_p[$refParams, $select]
     |
-    | error=DEFAULT sentlist
+    | error=DEFAULT sentlist[$refParams]
          {this.errorNotifier.notifyError($error, "miss_case_default");};
 
-cases_p[SelectSentencie select]
+cases_p[Set<String> refParams, SelectSentencie select]
     :
     '(' tags[$select] ')'
         {CaseSentencie caseSent = new CaseSentencie("case "+$tags.val+":");
          caseSent.setValue($tags.val);}
-    sentlist
+    sentlist[$refParams]
         {caseSent.addBody($sentlist.block_s);
          $select.addCaseClause(caseSent);}
-    cases[$select]
-    | DEFAULT sentlist
+    cases[$refParams, $select]
+    | DEFAULT sentlist[$refParams]
         {CaseSentencie def = new CaseSentencie("default:");
          def.addBody($sentlist.block_s);
          $select.addDefaultClause(def);}
     //Error alternatives
-    | error=tags[$select] sentlist cases[$select]
+    | error=tags[$select] sentlist[$refParams] cases[$refParams, $select]
         {this.errorNotifier.notifyError($error.start, "miss_cond_par");};
 
 tags[SelectSentencie select] returns[String val]
@@ -404,22 +404,53 @@ oparit returns [String val]
 factor returns [String val]
     : simpvalue             {$val = $simpvalue.val;}
     | '(' exp ')'           {$val = $exp.val;}
-    | IDENT subpparamlist   {$val = $IDENT.text+$subpparamlist.val;};
+    | IDENT subpparamlist   {
+        if ($subpparamlist.args.isEmpty()) {
+            $val = $IDENT.text;
+        } else {
+            $val = $IDENT.text + "(" + String.join(", ", $subpparamlist.args) + ")";
+        }
+    };
 
 proc_call returns[String val]
     : CALL IDENT subpparamlist
-    {$val = $IDENT.text+$subpparamlist.val;}
+    {
+        Subprogram sub = this.program.getSubprogram($IDENT.text);
+        if (sub != null && !sub.isFunction()) {
+            StringBuilder sb = new StringBuilder();
+            if (!$subpparamlist.args.isEmpty()) {
+                sb.append("(");
+                List<String> args = $subpparamlist.args;
+                for (int i = 0; i < args.size(); i++) {
+                    if (sub.isRefParam(i)) {
+                        sb.append("&");
+                    }
+                    sb.append(args.get(i));
+                    if (i < args.size() - 1) sb.append(", ");
+                }
+                sb.append(")");
+            }
+            $val = $IDENT.text + sb.toString();
+        } else {
+            if ($subpparamlist.args.isEmpty()) {
+                $val = $IDENT.text;
+            } else {
+                $val = $IDENT.text + "(" + String.join(", ", $subpparamlist.args) + ")";
+            }
+        }
+    }
     ;
 
-subpparamlist returns [String val]
+subpparamlist returns [List<String> args]
    : '(' exp explist ')'
-     {$val = "(" + $exp.val + $explist.val + ")";}
-   | {$val = "";}
+     { $args = new ArrayList<String>(); $args.add($exp.val); $args.addAll($explist.args); }
+   | { $args = new ArrayList<String>(); }
    ;
 
-explist returns [String val]
-    : ',' exp res=explist {$val = ", "+$exp.val+$res.val;}
-    | {$val = "";};
+explist returns [List<String> args]
+    : ',' exp res=explist { $args = new ArrayList<String>(); $args.add($exp.val); $args.addAll($res.args); }
+    | { $args = new ArrayList<String>(); }
+    ;
 
 /*Condition sentencies*/
 //expcond     : expcond oplog expcond | factorcond;
@@ -482,17 +513,19 @@ subproglist : codproc subproglist | codfun subproglist | ;
 codproc
     : SUBROUTINE i1=IDENT
       listP=formal_paramlist
-      sParams=dec_s_paramlist[$listP.idents, new HashSet<Param>()]
+      sParams=dec_s_paramlist[new HashSet<String>($listP.idents), new HashSet<Param>()]
       {
           Subprogram scope = null;
+          Set<String> refParams = new HashSet<String>();
           if (!this.program.hasSubprogram($i1.text)) {
               this.errorNotifier.notifyError($i1, "undeclared_subprogram");
           } else {
               scope = this.program.getSubprogram($i1.text);
+              refParams = scope.getRefParamNames();
           }
       }
       dcllist[scope]
-      sentlist
+      sentlist[refParams]
       END SUBROUTINE i2=IDENT
       {
           if (!$i1.text.equals($i2.text)) {
@@ -512,9 +545,9 @@ codproc
 
 codfun
     : FUNCTION i1=IDENT
-      '(' nParams=nomparamlist[new HashSet<String>()] ')'
+      '(' nParams=nomparamlist[new ArrayList<String>()] ')'
       type '::' i2=IDENT SEMI
-      fParams=dec_f_paramlist[$nParams.paramlist_s, new HashSet<Param>()]
+      fParams=dec_f_paramlist[new HashSet<String>($nParams.paramlist_s), new HashSet<Param>()]
       {
           Subprogram scope = null;
           if (!this.program.hasSubprogram($i1.text)) {
@@ -529,7 +562,7 @@ codfun
       //ret=IDENT '=' exp SEMI
       //END FUNCTION i3=IDENT
       {   ProgramBody imp = new ProgramBody();}
-      sentlist_fun[$i1.text, imp]
+      sentlist_fun[$i1.text, new HashSet<String>(), imp]
       {
           if (!this.program.hasSubprogram($i1.text)) {
               this.errorNotifier.notifyError($i1, "undeclared_subprogram");
@@ -552,44 +585,46 @@ codfun
     ;
 
 
-sentlist_fun[String funName, ProgramBody imp]
+sentlist_fun[String funName, Set<String> refParams, ProgramBody imp]
     : IDENT '=' exp SEMI
         {if ($funName.equals($IDENT.text))
             $imp.addSentencie(new Sentencie("return "+$exp.val+";"));
-         else
-            $imp.addSentencie(new Sentencie($IDENT.text+" = "+$exp.val+";"));}
-      sentlist_fun_p[$funName, $IDENT.text, $imp]
+         else {
+            String prefix = $refParams.contains($IDENT.text) ? "*" : "";
+            $imp.addSentencie(new Sentencie(prefix+$IDENT.text+" = "+$exp.val+";"));
+         }}
+      sentlist_fun_p[$funName, $refParams, $IDENT.text, $imp]
     | proc_call SEMI
         {$imp.addSentencie(new Sentencie($proc_call.val));}
-      sentlist_fun[$funName, $imp]
+      sentlist_fun[$funName, $refParams, $imp]
     |
-    IF '(' expcond ')' if_body
+    IF '(' expcond ')' if_body[$refParams]
         {ConditionSentencie sent = new ConditionSentencie("if ("+$expcond.val+") ");
          sent.addIfBody($if_body.if);
          sent.addElseBody($if_body.else);
          $imp.addSentencie(sent);
         }
-    sentlist_fun[$funName, $imp]
+    sentlist_fun[$funName, $refParams, $imp]
     |
-    DO loop_body
+    DO loop_body[$refParams]
         {$imp.addSentencie($loop_body.val);}
-    sentlist_fun[$funName, $imp]
+    sentlist_fun[$funName, $refParams, $imp]
     |
     SELECT CASE '(' exp ')'
         {SelectSentencie sent = new SelectSentencie("switch ("+$exp.val+")");}
-    cases[sent]
+    cases[$refParams, sent]
         {$imp.addSentencie(sent);}
     END SELECT
-    sentlist_fun[$funName, $imp]
+    sentlist_fun[$funName, $refParams, $imp]
     ;
 
 
-sentlist_fun_p[String funName, String lastName, ProgramBody imp]
+sentlist_fun_p[String funName, Set<String> refParams, String lastName, ProgramBody imp]
     : END FUNCTION IDENT
         {if (!$funName.equals(lastName)) this.errorNotifier.notifyError($END, "bad_return_sentencie");
          if (!$funName.equals($IDENT.text)) this.errorNotifier.notifyError($IDENT, "missmatch_subroutine_name");
         }
-    | sentlist_fun[$funName, $imp]; //TODO: if lastName = funName throw error for not ending after return statement? may give problems with composite pattern
+    | sentlist_fun[$funName, $refParams, $imp]; //TODO: if lastName = funName throw error for not ending after return statement? may give problems with composite pattern
 
 /*===============Tokens:===============*/
 /***************Keywords***************/
