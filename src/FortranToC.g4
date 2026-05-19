@@ -282,10 +282,10 @@ sentlist_p  [Set<String> refParams, ProgramBody block_h] returns [ProgramBody bl
     |   {$block_s = $block_h;};
 
 sent[Set<String> refParams] returns [Sentencie val]
-        : IDENT '=' exp SEMI  {String prefix = $refParams.contains($IDENT.text) ? "*" : ""; $val = new Sentencie(prefix+$IDENT.text + " = "+$exp.val+";");}
-        | proc_call SEMI    {$val = new Sentencie($proc_call.val);}
+        : IDENT '=' exp[$refParams] SEMI  {String prefix = $refParams.contains($IDENT.text) ? "*" : ""; $val = new Sentencie(prefix+$IDENT.text + " = "+$exp.val+";");}
+        | proc_call[$refParams] SEMI    {$val = new Sentencie($proc_call.val);}
         |
-        IF '(' expcond ')' if_body[$refParams]
+        IF '(' expcond[$refParams] ')' if_body[$refParams]
             {ConditionSentencie sent = new ConditionSentencie("if ("+$expcond.val+") ");
              sent.addIfBody($if_body.if);
              sent.addElseBody($if_body.else);
@@ -295,7 +295,7 @@ sent[Set<String> refParams] returns [Sentencie val]
         DO loop_body[$refParams]
             {$val = $loop_body.val;}
         |
-        SELECT CASE '(' exp ')'
+        SELECT CASE '(' exp[$refParams] ')'
             {SelectSentencie sent = new SelectSentencie("switch ("+$exp.val+")");}
         cases[$refParams, sent]
             {$val = sent;}
@@ -319,7 +319,7 @@ if_body_p[Set<String> refParams]  returns [ProgramBody else]
 
 loop_body[Set<String> refParams] returns[LoopSentencie val]
     :
-    WHILE '(' expcond ')'
+    WHILE '(' expcond[$refParams] ')'
     {LoopSentencie sent = new LoopSentencie("while ( "+$expcond.val+" ) ");}
     sentlist[$refParams]
     {sent.addBody($sentlist.block_s);}
@@ -394,22 +394,22 @@ not LL1 for exp_p
 exp         : factor exp_p;
 exp_p       : op exp exp_p | ;
 */
-exp returns[String val]
+exp[Set<String> refParams] returns[String val]
         :
-        factor
+        factor[$refParams]
         {StringBuilder sb = new StringBuilder();
         sb.append($factor.val);}
-        exp_p[sb]
+        exp_p[sb, $refParams]
         {$val = $exp_p.val;}
         ;
 
-exp_p[StringBuilder sb] returns[String val]
+exp_p[StringBuilder sb, Set<String> refParams] returns[String val]
       :
       oparit
       {sb.append($oparit.val);}
-      factor
+      factor[$refParams]
       {sb.append($factor.val);}
-      res=exp_p[sb]
+      res=exp_p[sb, $refParams]
       {$val = $res.val;}
       | {$val = sb.toString();};
 
@@ -419,19 +419,20 @@ oparit returns [String val]
     | '*' {$val = " * ";}
     | '/' {$val = " / ";} ;
 //factor      : simpvalue | '(' exp ')' | IDENT '(' exp explist ')' | IDENT; // not LL1
-factor returns [String val]
+factor[Set<String> refParams] returns [String val]
     : simpvalue             {$val = $simpvalue.val;}
-    | '(' exp ')'           {$val = $exp.val;}
-    | IDENT subpparamlist   {
+    | '(' exp[$refParams] ')'           {$val = $exp.val;}
+    | IDENT subpparamlist[$refParams]   {
         if ($subpparamlist.args.isEmpty()) {
-            $val = $IDENT.text;
+            String deref = $refParams.contains($IDENT.text) ? "*" : "";
+            $val = deref + $IDENT.text;
         } else {
             $val = $IDENT.text + "(" + String.join(", ", $subpparamlist.args) + ")";
         }
     };
 
-proc_call returns[String val]
-    : CALL IDENT subpparamlist
+proc_call[Set<String> refParams] returns[String val]
+    : CALL IDENT subpparamlist[$refParams]
     {
         Subprogram sub = this.program.getSubprogram($IDENT.text);
         if (sub != null && !sub.isFunction()) {
@@ -459,35 +460,35 @@ proc_call returns[String val]
     }
     ;
 
-subpparamlist returns [List<String> args]
-   : '(' exp explist ')'
+subpparamlist[Set<String> refParams] returns [List<String> args]
+   : '(' exp[$refParams] explist[$refParams] ')'
      { $args = new ArrayList<String>(); $args.add($exp.val); $args.addAll($explist.args); }
    | { $args = new ArrayList<String>(); }
    ;
 
-explist returns [List<String> args]
-    : ',' exp res=explist { $args = new ArrayList<String>(); $args.add($exp.val); $args.addAll($res.args); }
+explist[Set<String> refParams] returns [List<String> args]
+    : ',' exp[$refParams] res=explist[$refParams] { $args = new ArrayList<String>(); $args.add($exp.val); $args.addAll($res.args); }
     | { $args = new ArrayList<String>(); }
     ;
 
 /*Condition sentencies*/
 //expcond     : expcond oplog expcond | factorcond;
-expcond returns [String val]
+expcond[Set<String> refParams] returns [String val]
     :
-    factorcond
+    factorcond[$refParams]
     {StringBuilder sb = new StringBuilder();
     sb.append($factorcond.val);}
-    expcond_p[sb]
+    expcond_p[sb, $refParams]
     {$val = $expcond_p.val;}
     ;
 
-expcond_p[StringBuilder sb] returns[String val]
+expcond_p[StringBuilder sb, Set<String> refParams] returns[String val]
     :
     oplog
     {$sb.append($oplog.val);}
-    factorcond
+    factorcond[$refParams]
     {$sb.append($factorcond.val);}
-    res=expcond_p[sb]
+    res=expcond_p[sb, $refParams]
     {$val = $res.val;}
     | {$val = $sb.toString();};
 
@@ -497,15 +498,15 @@ oplog returns [String val]
     | EQV  {$val = " !^ ";}
     | NEQV {$val = " ^ ";};
 
-factorcond returns [String val] //LL(k)
+factorcond[Set<String> refParams] returns [String val] //LL(k)
     :
-    e1=exp opcomp e2=exp
+    e1=exp[$refParams] opcomp e2=exp[$refParams]
     {$val = $e1.val + $opcomp.val + $e2.val;}
     |
-    '(' expcond ')'
+    '(' expcond[$refParams] ')'
     {$val = "(" + $expcond.val + ")";}
     |
-    NOT c=factorcond
+    NOT c=factorcond[$refParams]
     {$val = "!(" + $c.val + ")";}
     | TRUE  {$val = "1";}
     | FALSE {$val = "0";}
@@ -604,7 +605,7 @@ codfun
 
 
 sentlist_fun[String funName, Set<String> refParams, ProgramBody imp]
-    : IDENT '=' exp SEMI
+    : IDENT '=' exp[$refParams] SEMI
         {if ($funName.equals($IDENT.text))
             $imp.addSentencie(new Sentencie("return "+$exp.val+";"));
          else {
@@ -612,11 +613,11 @@ sentlist_fun[String funName, Set<String> refParams, ProgramBody imp]
             $imp.addSentencie(new Sentencie(prefix+$IDENT.text+" = "+$exp.val+";"));
          }}
       sentlist_fun_p[$funName, $refParams, $IDENT.text, $imp]
-    | proc_call SEMI
+    | proc_call[$refParams] SEMI
         {$imp.addSentencie(new Sentencie($proc_call.val));}
       sentlist_fun[$funName, $refParams, $imp]
     |
-    IF '(' expcond ')' if_body[$refParams]
+    IF '(' expcond[$refParams] ')' if_body[$refParams]
         {ConditionSentencie sent = new ConditionSentencie("if ("+$expcond.val+") ");
          sent.addIfBody($if_body.if);
          sent.addElseBody($if_body.else);
@@ -628,7 +629,7 @@ sentlist_fun[String funName, Set<String> refParams, ProgramBody imp]
         {$imp.addSentencie($loop_body.val);}
     sentlist_fun[$funName, $refParams, $imp]
     |
-    SELECT CASE '(' exp ')'
+    SELECT CASE '(' exp[$refParams] ')'
         {SelectSentencie sent = new SelectSentencie("switch ("+$exp.val+")");}
     cases[$refParams, sent]
         {$imp.addSentencie(sent);}
