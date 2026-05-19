@@ -88,7 +88,7 @@ public class Subprogram {
                 if (i < paramOrder.size() - 1) System.out.print(", ");
             }
         }
-        System.out.print(" );");
+        System.out.print(" )");
     }
 
     public void generateCode() {
