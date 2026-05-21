@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 /*
 *@author JaTorroba
-*Decorator class for enhanced error notification with personalized messages for error alternatives
 */
 
 public class ErrorNotifier {
@@ -16,7 +15,7 @@ public class ErrorNotifier {
     public ErrorNotifier(FortranToCParser parser) {
         this.parser = parser;
         this.msgMap = new HashMap<>();
-        this.initializeMap();
+        this.initializeMapEsp();
     }
 
     private void initializeMap(){
@@ -36,6 +35,29 @@ public class ErrorNotifier {
         this.msgMap.put("symbol_already_taken", "The name: '%1$s' has already been assigned to another symbol");
         this.msgMap.put("bad_return_sentencie", "Missing return sentencie: the returns value for the function must be assigned with the same identifier declared for the subroutine");
         this.msgMap.put("missing_param_declaration", "Not all parameters declared in the signature were typed in the parameter list");
+        this.msgMap.put("code_after_return", "Sentencies found after functions' return statement");
+        this.msgMap.put("already_declared_param","Theres is already a parameter declared by the name; '%1$s'");
+    }
+
+    private void initializeMapEsp(){
+        this.msgMap.put("character_typo", "Posible error tipográfico en la declaración del carácter, encontrado: '%1$s', se esperaba: CHARACTER(NUMBER)");
+        this.msgMap.put("real_typo", "Posible error tipográfico en la declaración del real, encontrado: '%1$s', se esperaba: REAL");
+        this.msgMap.put("integer_typo", "Posible error tipográfico en la declaración del entero, encontrado: '%1$s', se esperaba: INTEGER");
+        this.msgMap.put("var_init", "Inicialización de variable incorrecta, encontrado: '%1$s', se esperaba: {NUM_REAL_CONST, NUM_INT_CONST, NUM_INT_CONST_B, NUM_INT_CONST_O, NUM_INT_CONST_H, STRING_CONST}");
+        this.msgMap.put("miss_var_init","Falta el valor de inicialización de la variable antes de '%1$s'");
+        this.msgMap.put("miss_cond_par", "Faltan '( )' alrededor de la condición, encontrado: '%1$s...', se esperaba: (%1$s...)");
+        this.msgMap.put("miss_case_default", "Falta 'CASE' antes de DEFAULT, encontrado: '%1$s', se esperaba: CASE DEFAULT");
+        this.msgMap.put("missmatched_value_type", "El tipo declarado para: '%1$s', no corresponde con el valor asignado");
+        this.msgMap.put("undeclared_param", "No hay ningún parámetro declarado con el nombre: '%1$s'");
+        this.msgMap.put("missmatch_subroutine_name", "El nombre de la subrutina debe ser el mismo en todas las partes de la declaración");
+        this.msgMap.put("signature_missmatch_in_implementation", "La implementación de la subrutina: '%1$s' no se corresponde con la firma de la declaración anterior");
+        this.msgMap.put("return_type_missmatch", "El tipo de retorno declarado previamente para la función: '%1$s' no coincide con el nuevo tipo proporcionado");
+        this.msgMap.put("undeclared_subprogram", "No hay ninguna subrutina declarada con el nombre: '%1$s'");
+        this.msgMap.put("symbol_already_taken", "El nombre: '%1$s' ya ha sido asignado a otro símbolo");
+        this.msgMap.put("bad_return_sentencie", "Falta la sentencia de retorno: el valor de retorno de la función debe ser asignado con el mismo identificador declarado para la subrutina");
+        this.msgMap.put("missing_param_declaration", "No todos los parámetros declarados en la firma tienen su tipo especificado en la lista de parámetros");
+        this.msgMap.put("code_after_return", "Se han encontrado sentencias después de la instrucción de retorno de la función");
+        this.msgMap.put("already_declared_param","Ya existe un parámetro declarado con el nombre: '%1$s'");
     }
 
     public void notifyError(Token offToken, String msgKey) {

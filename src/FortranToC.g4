@@ -185,7 +185,10 @@ nomparamlist [List<String> paramlist_h] returns [List<String> paramlist_s]
       nomparamlist_p[$paramlist_h] {$paramlist_s = $nomparamlist_p.paramlist_s;} ;
 
 nomparamlist_p [List<String> paramlist_h] returns [List<String> paramlist_s]
-    : ',' IDENT {$paramlist_h.add($IDENT.text);} //TODO: añadir comprobacion de si ya hay otra por ese nombre
+    : ',' IDENT
+        {if ($paramlist_h.contains($IDENT.text))
+            this.errorNotifier.notifyError($IDENT, "already_declared_param");
+        $paramlist_h.add($IDENT.text);}
       res=nomparamlist_p[$paramlist_h] {$paramlist_s = $res.paramlist_s;}
     | {$paramlist_s = $paramlist_h;}
     ;
@@ -643,7 +646,7 @@ sentlist_fun_p[String funName, Set<String> refParams, String lastName, ProgramBo
         {if (!$funName.equals(lastName)) this.errorNotifier.notifyError($END, "bad_return_sentencie");
          if (!$funName.equals($IDENT.text)) this.errorNotifier.notifyError($IDENT, "missmatch_subroutine_name");
         }
-    | sentlist_fun[$funName, $refParams, $imp]; //TODO: if lastName = funName throw error for not ending after return statement? may give problems with composite pattern
+    | sentlist_fun[$funName, $refParams, $imp];
 
 /*===============Tokens:===============*/
 /***************Keywords***************/
