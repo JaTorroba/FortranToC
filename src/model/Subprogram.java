@@ -85,9 +85,11 @@ public class Subprogram {
             if (p != null) {
                 String pointer = (p.getParamType().equals("OUT") || p.getParamType().equals("INOUT")) ? "*" : "";
                 System.out.print(p.getType() + " " + pointer + p.getName());
+                if (p.getType().equals("char")) System.out.print("[]");
                 if (i < paramOrder.size() - 1) System.out.print(", ");
             }
         }
+        if (paramOrder.isEmpty()) System.out.print("void");
         System.out.print(" )");
     }
 

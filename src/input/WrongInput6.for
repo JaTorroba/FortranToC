@@ -14,6 +14,5 @@ END INTERFACE
 
 mivar = 4 + (4 - 1);
 CALL mimetodo(mivar3, mivar4);
-! eswoifneoinf2eoi2i3ji2j329i4309i8/&%$&/(!·I!)·")
 END PROGRAM miprograma
 

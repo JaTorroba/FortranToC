@@ -327,7 +327,7 @@ loop_body[Set<String> refParams] returns[LoopSentencie val]
     {$val = sent;}
     |
     IDENT '=' d1=doval ',' d2=doval ',' d3=doval
-    {String content = "for("+$IDENT.text+"="+$d1.val+ " ; "+$IDENT.text+"!="+$d2.val+" ; "+$IDENT.text+"="+$IDENT.text+"+"+$d3.val;
+    {String content = "for("+$IDENT.text+"="+$d1.val+ " ; "+$IDENT.text+"!="+$d2.val+" ; "+$IDENT.text+"="+$IDENT.text+"+"+$d3.val+" )";
      LoopSentencie sent = new LoopSentencie(content);}
     sentlist[$refParams]
     {sent.addBody($sentlist.block_s);}
@@ -507,7 +507,7 @@ factorcond[Set<String> refParams] returns [String val] //LL(k)
     {$val = "(" + $expcond.val + ")";}
     |
     NOT c=factorcond[$refParams]
-    {$val = "!(" + $c.val + ")";}
+    {$val = "!" + $c.val ;}
     | TRUE  {$val = "1";}
     | FALSE {$val = "0";}
     ;

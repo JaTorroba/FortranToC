@@ -65,22 +65,23 @@ public class Program {
         for (Constant c : this.globalSymbols.getConstants()) {
             c.generateCode();
         }
-
+        System.out.println();
         for (Subprogram sub : this.subprograms.values()) {
             sub.generateDeclarationCode();
             System.out.println(";");
         }
-
+        System.out.println();
         System.out.println("void main (void) {");
 
         this.globalSymbols.generateVariablesCode(1);
-
+        System.out.println();
         this.main.generateCode(1);
 
         System.out.println("}");
-
+        System.out.println();
         for (Subprogram sub : this.subprograms.values()) {
             sub.generateCode();
+            System.out.println();
         }
     }
 

@@ -1,5 +1,5 @@
 PROGRAM gestion_almacen ;
-! --- Configuración inicial ---
+
 INTEGER, PARAMETER :: stock_min = o'12', capacidad = o'144'; ! 10 y 100 en octal
 REAL, PARAMETER :: tasa_iva = 0.21;
 
@@ -20,10 +20,8 @@ CHARACTER(12) :: dpto = 'LOGISTICA';
         END FUNCTION CalcularCosto
     END INTERFACE
 
-    ! Lógica de negocio
     coste_total = CalcularCosto(items, precio_unidad);
 
-    ! Verificación de stock crítico
     IF ( items < stock_min ) THEN
         CALL ActualizarStock(20, 'REPOSICION');
         flags = b'1011';
@@ -31,7 +29,6 @@ CHARACTER(12) :: dpto = 'LOGISTICA';
         CALL ActualizarStock(0, 'LECTURA');
     ENDIF
 
-    ! Control de errores con IF anidado
     IF ( coste_total > 1000.0 ) THEN
         IF ( .NOT. (items == 0) ) THEN
             errores = errores + 1;
@@ -43,7 +40,7 @@ END PROGRAM gestion_almacen
 SUBROUTINE ActualizarStock(cantidad, operacion)
     INTEGER, INTENT(IN) cantidad;
     CHARACTER(12), INTENT(IN) operacion;
-    ! Simulación de actualización
+
     cantidad = operacion * 2;
 END SUBROUTINE ActualizarStock
 

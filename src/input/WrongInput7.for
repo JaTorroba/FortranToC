@@ -4,7 +4,6 @@ PROGRAM test7;
     INTERFACE
         SUBROUTINE proc1 ( a, b )
             INTEGER, INTENT(IN) a;
-            ! Error provocado: falta declarar el tipo y el intent del parametro 'b'
         END SUBROUTINE proc1
         
         FUNCTION func1 ( x, y ) INTEGER :: func1;
@@ -25,6 +24,8 @@ END SUBROUTINE proc1
 
 FUNCTION func1 ( x, y ) INTEGER :: func1;
     INTEGER, INTENT(IN) x;
-    ! Error provocado: falta declarar el tipo y el intent del parametro 'y'
-    func1 = x;
+
+    INTEGER :: bad;
+    bad = x;
+
 END FUNCTION func1

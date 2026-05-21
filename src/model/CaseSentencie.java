@@ -34,7 +34,6 @@ public class CaseSentencie extends Sentencie{
     public void generateCode(int indentLevel){
         System.out.println(indent(indentLevel) + this.content);
         this.body.generateCode(indentLevel + 1);
-        System.out.println(indent(indentLevel + 1) + "break;");
     }
 
 

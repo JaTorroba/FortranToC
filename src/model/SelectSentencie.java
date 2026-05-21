@@ -41,10 +41,10 @@ public class SelectSentencie extends Sentencie{
                     System.out.println(indent(indentLevel + 1) + "case "+dupCase+":");
                 }
                 c.getBody().generateCode(indentLevel + 2);
-                System.out.println(indent(indentLevel + 2) + "break;");
             } else {
                 c.generateCode(indentLevel + 1);
             }
+            System.out.println(indent(indentLevel + 2) + "break;");
         }
         if (this.defaultClause != null) {
             this.defaultClause.generateCode(indentLevel + 1);

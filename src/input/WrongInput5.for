@@ -15,7 +15,7 @@ END SELECT
 SELECT CASE (sensor_id)
     CASE (101)
         estado = 1;
-    CASE 202             ! ERROR AQUÍ: Falta '(' y ')'
+    CASE 202
         estado = 0;
     DEFAULT
         estado = -1;
