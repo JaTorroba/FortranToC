@@ -135,7 +135,7 @@ public class FortranToCParser extends Parser {
 
 
 	    public ErrorNotifier errorNotifier = new ErrorNotifier(this);
-	    public Program program = Program.getInstance();
+	    public Program program = new Program();
 
 	public FortranToCParser(TokenStream input) {
 		super(input);
@@ -1774,7 +1774,9 @@ public class FortranToCParser extends Parser {
 				match(T__3);
 				setState(284);
 				((Nomparamlist_pContext)_localctx).IDENT = match(IDENT);
-				_localctx.paramlist_h.add((((Nomparamlist_pContext)_localctx).IDENT!=null?((Nomparamlist_pContext)_localctx).IDENT.getText():null));
+				if (_localctx.paramlist_h.contains((((Nomparamlist_pContext)_localctx).IDENT!=null?((Nomparamlist_pContext)_localctx).IDENT.getText():null)))
+				            this.errorNotifier.notifyError(((Nomparamlist_pContext)_localctx).IDENT, "already_declared_param");
+				        _localctx.paramlist_h.add((((Nomparamlist_pContext)_localctx).IDENT!=null?((Nomparamlist_pContext)_localctx).IDENT.getText():null));
 				setState(286);
 				((Nomparamlist_pContext)_localctx).res = nomparamlist_p(_localctx.paramlist_h);
 				((Nomparamlist_pContext)_localctx).paramlist_s =  ((Nomparamlist_pContext)_localctx).res.paramlist_s;
@@ -2733,7 +2735,7 @@ public class FortranToCParser extends Parser {
 				match(T__3);
 				setState(428);
 				((Loop_bodyContext)_localctx).d3 = doval();
-				String content = "for("+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"="+((Loop_bodyContext)_localctx).d1.val+ " ; "+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"!="+((Loop_bodyContext)_localctx).d2.val+" ; "+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"="+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"+"+((Loop_bodyContext)_localctx).d3.val;
+				String content = "for("+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"="+((Loop_bodyContext)_localctx).d1.val+ " ; "+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"!="+((Loop_bodyContext)_localctx).d2.val+" ; "+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"="+(((Loop_bodyContext)_localctx).IDENT!=null?((Loop_bodyContext)_localctx).IDENT.getText():null)+"+"+((Loop_bodyContext)_localctx).d3.val+" )";
 				     LoopSentencie sent = new LoopSentencie(content);
 				setState(430);
 				((Loop_bodyContext)_localctx).sentlist = sentlist(_localctx.refParams);
@@ -4215,7 +4217,7 @@ public class FortranToCParser extends Parser {
 				match(NOT);
 				setState(601);
 				((FactorcondContext)_localctx).c = factorcond(_localctx.refParams);
-				((FactorcondContext)_localctx).val =  "!(" + ((FactorcondContext)_localctx).c.val + ")";
+				((FactorcondContext)_localctx).val =  "!" + ((FactorcondContext)_localctx).c.val ;
 				}
 				break;
 			case 4:

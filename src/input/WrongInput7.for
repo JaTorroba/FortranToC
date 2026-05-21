@@ -22,7 +22,7 @@ SUBROUTINE proc1 ( a, b )
     a = b;
 END SUBROUTINE proc1
 
-FUNCTION func1 ( x, y ) INTEGER :: func1;
+FUNCTION func1 ( x ) INTEGER :: func1;
     INTEGER, INTENT(IN) x;
 
     INTEGER :: bad;
