@@ -10,7 +10,7 @@ grammar FortranToC;
 
 @parser::members {
     public ErrorNotifier errorNotifier = new ErrorNotifier(this);
-    public Program program = Program.getInstance();
+    public Program program = new Program();
 }
 
 prg : PROGRAM IDENT SEMI

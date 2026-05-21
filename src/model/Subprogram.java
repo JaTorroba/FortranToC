@@ -10,14 +10,16 @@ public class Subprogram {
     private final Symbols localSymbols;
     private ProgramBody implementation;
     private final List<String> paramOrder;
+    private final Program program;
 
-    public Subprogram(String name, String returnType, Set<Param> params, List<String> paramOrder) {
+    public Subprogram(String name, String returnType, Set<Param> params, List<String> paramOrder, Program program) {
         this.name = name;
         this.isFunction = returnType != null;
         this.returnType = returnType;
         this.paramOrder = paramOrder;
         this.params = new HashMap<>();
         this.localSymbols = new Symbols();
+        this.program = program;
         for (Param p : params)
             this.params.put(p.getName(), p);
     }
@@ -33,7 +35,7 @@ public class Subprogram {
     public String getReturnType() { return this.returnType;}
 
     public void declareLocalVar(String type, String name, String init, String len) {
-        Symbols globalSymbols = Program.getInstance().getSymbols();
+        Symbols globalSymbols = this.program.getSymbols();
         if (globalSymbols.symbolIsTaken(name) || localSymbols.symbolIsTaken(name)) {
             throw new IllegalArgumentException("Symbol "+name+" is already taken");
         }
@@ -41,7 +43,7 @@ public class Subprogram {
     }
 
     public void declareInlineLocalVar(String type, String name, String init, String len) {
-        Symbols globalSymbols = Program.getInstance().getSymbols();
+        Symbols globalSymbols = this.program.getSymbols();
         if (globalSymbols.symbolIsTaken(name) || localSymbols.symbolIsTaken(name)) {
             throw new IllegalArgumentException("Symbol "+name+" is already taken");
         }

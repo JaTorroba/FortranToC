@@ -5,18 +5,18 @@ import java.util.*;
 
 public class Program {
     private ProgramBody main;
-    private final Map<String, Subprogram> subprograms;
+    private final Map<String, Subprogram> subprogramMap;
+    private final List<Subprogram> subprograms;
     private final Symbols globalSymbols;
-    public static final Program INSTANCE = new Program();
 
 
-    private Program() {
+    public Program() {
         this.globalSymbols = new Symbols();
         this.main = new ProgramBody();
-        this.subprograms = new HashMap<>();
+        this.subprogramMap = new HashMap<>();
+        this.subprograms = new LinkedList<>();
     }
 
-    public static Program getInstance() {return INSTANCE;}
 
     public void declareVar(String type, String name, String init, String len) {
         if (this.globalSymbols.symbolIsTaken(name)) {
@@ -40,19 +40,20 @@ public class Program {
     }
 
     public void declareSubprogram(String name, List<String> paramNames, Set<Param> params, String returnType){
-        if (this.subprograms.containsKey(name)) {
+        if (this.subprogramMap.containsKey(name)) {
             throw new IllegalArgumentException("Symbol "+name+" is already taken");
         }
-        Subprogram sub = new Subprogram(name, returnType, params, paramNames);
-        this.subprograms.put(name, sub);
+        Subprogram sub = new Subprogram(name, returnType, params, paramNames, this);
+        this.subprogramMap.put(name, sub);
+        this.subprograms.addLast(sub);
     }
 
     public boolean hasSubprogram(String name) {
-        return this.subprograms.containsKey(name);
+        return this.subprogramMap.containsKey(name);
     }
 
     public Subprogram getSubprogram(String name) {
-        return this.subprograms.get(name);
+        return this.subprogramMap.get(name);
     }
 
     public Symbols getSymbols() {return this.globalSymbols;}
@@ -66,7 +67,7 @@ public class Program {
             c.generateCode();
         }
         System.out.println();
-        for (Subprogram sub : this.subprograms.values()) {
+        for (Subprogram sub : this.subprogramMap.values()) {
             sub.generateDeclarationCode();
             System.out.println(";");
         }
@@ -79,7 +80,7 @@ public class Program {
 
         System.out.println("}");
         System.out.println();
-        for (Subprogram sub : this.subprograms.values()) {
+        for (Subprogram sub : this.subprograms) {
             sub.generateCode();
             System.out.println();
         }

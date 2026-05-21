@@ -7,8 +7,6 @@ public class Symbols {
     private final List<Constant> orderedCte;
     private final Map<String, Variable> var;
     private final List<Variable> orderedVar;
-    private final Map<String, Subprogram> sub;
-    private final List<Subprogram> orderedSub;
     private final Map<Variable, List<Variable>> inlineVariables;
 
     private Variable lastDeclaredVar;
@@ -18,9 +16,7 @@ public class Symbols {
     public Symbols() {
         this.var = new HashMap<>();
         this.cte = new HashMap<>();
-        this.sub = new HashMap<>();
         this.orderedVar = new LinkedList<>();
-        this.orderedSub = new LinkedList<>();
         this.orderedCte = new LinkedList<>();
         this.inlineVariables = new HashMap<>();
 
@@ -56,7 +52,6 @@ public class Symbols {
     }
 
     public void addSub(String name, Subprogram sub) {
-        this.sub.put(name, sub);
         this.symbols.add(name);
     }
 
